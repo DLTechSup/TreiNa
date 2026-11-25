@@ -100,7 +100,7 @@ export default function Historico() {
         </View>
 
         <Segmentado<Aba> valor={aba} onMudar={setAba} opcoes={[
-          { valor: 'dias', texto: 'Dia a dia' }, { valor: 'mes', texto: 'Mês' }, { valor: 'ano', texto: 'Ano' }, { valor: 'exercicios', texto: 'Exercícios' },
+          { valor: 'dias', texto: 'Dia a dia' }, { valor: 'mes', texto: 'Mês' }, { valor: 'ano', texto: 'Ano' }, { valor: 'exercicios', texto: 'Recordes' },
         ]} />
 
         {aba === 'dias' && porDia.map(([data, lista]) => (

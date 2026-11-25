@@ -59,8 +59,8 @@ export default function TelaPerfil() {
               </View>
             </View>
             <View style={s.metricas}>
-              <Metrica rotulo="Peso" valor={atual.peso ? `${texto(atual.peso)} kg` : '—'} />
-              <Metrica rotulo="Altura" valor={atual.altura ? `${texto(atual.altura)} cm` : '—'} />
+              <Metrica rotulo="Peso" valor={atual.peso ? texto(atual.peso) : '—'} unidade={atual.peso ? 'kg' : undefined} />
+              <Metrica rotulo="Altura" valor={atual.altura ? texto(atual.altura) : '—'} unidade={atual.altura ? 'cm' : undefined} />
               <Metrica rotulo="IMC" valor={imc ? imc.valor.toFixed(1).replace('.', ',') : '—'} detalhe={imc?.faixa} />
             </View>
           </View>
@@ -99,11 +99,13 @@ export default function TelaPerfil() {
   );
 }
 
-function Metrica({ rotulo, valor, detalhe }: { rotulo: string; valor: string; detalhe?: string }) {
+function Metrica({ rotulo, valor, unidade, detalhe }: { rotulo: string; valor: string; unidade?: string; detalhe?: string }) {
   return (
     <View style={s.metrica}>
       <Text style={s.claro2}>{rotulo}</Text>
-      <Text style={s.metricaValor}>{valor}</Text>
+      <Text style={s.metricaValor} numberOfLines={1}>
+        {valor}{unidade ? <Text style={s.metricaUnidade}> {unidade}</Text> : null}
+      </Text>
       {detalhe ? <Text style={s.metricaDetalhe}>{detalhe}</Text> : null}
     </View>
   );
@@ -137,13 +139,14 @@ const s = StyleSheet.create({
   metricas: { flexDirection: 'row', gap: 8 },
   metrica: { flex: 1, backgroundColor: cores.escuro2, borderRadius: 12, paddingVertical: 8, paddingHorizontal: 10 },
   metricaValor: { fontFamily: fontes.negrito, fontSize: 17, color: cores.textoClaro, marginTop: 2 },
+  metricaUnidade: { fontFamily: fontes.media, fontSize: 12, color: cores.textoClaro2 },
   metricaDetalhe: { fontFamily: fontes.semi, fontSize: 11, color: cores.lima },
   legenda: { fontFamily: fontes.negrito, fontSize: 13, color: cores.texto },
   cinza: { fontFamily: fontes.regular, color: cores.texto2 },
   rotuloCampo: { fontFamily: fontes.media, fontSize: 11, color: cores.texto2 },
   input: {
     height: 44, borderRadius: 10, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.cartao,
-    paddingHorizontal: 12, fontFamily: fontes.media, fontSize: 15, color: cores.texto,
+    paddingHorizontal: 12, fontFamily: fontes.media, fontSize: 16, color: cores.texto,
   },
   linha3: { flexDirection: 'row', gap: 8 },
   mulher: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: cores.lilas, borderRadius: raio.m, padding: 14 },

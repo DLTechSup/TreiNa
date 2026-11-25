@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 
 import { Icone } from '@/components/Icone';
+import { FaixaRolavel } from '@/components/pecas';
 import { Botao, Chip, LinhaExercicio, Titulo } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { emSecoes, exercicios, filtrar, focos, grupos } from '@/data';
@@ -24,13 +25,21 @@ export default function Biblioteca() {
   useEffect(() => { if (params.grupo) { setF({ grupo: params.grupo }); setBusca(''); } }, [params.grupo]);
   useEffect(() => { if (params.foco) { setF({ foco: params.foco }); setBusca(''); } }, [params.foco]);
 
+  // Buscando por nome: procura em toda a biblioteca. Sem busca: usa os filtros.
   const lista = useMemo(
-    () => filtrar({
-      busca, grupo: f.grupo, equipamento: f.aparelho, foco: f.foco,
-      ids: f.favoritos ? favoritos : undefined,
-    }),
+    () => (busca.trim()
+      ? filtrar({ busca })
+      : filtrar({ grupo: f.grupo, equipamento: f.aparelho, foco: f.foco, ids: f.favoritos ? favoritos : undefined })),
     [busca, f, favoritos],
   );
+  // Aparelhos do grupo escolhido (com quantos exercícios cada um tem)
+  const aparelhos = useMemo(() => {
+    if (!f.grupo) return [];
+    const m = new Map<string, number>();
+    filtrar({ grupo: f.grupo, foco: f.foco, ids: f.favoritos ? favoritos : undefined })
+      .forEach((e) => m.set(e.equipamento, (m.get(e.equipamento) ?? 0) + 1));
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [f.grupo, f.foco, f.favoritos, favoritos]);
   const secoes = useMemo(() => {
     if (busca.trim()) return lista.length ? [{ titulo: 'Resultados', data: lista }] : [];
     if (f.foco) return emSecoes(lista, 'foco');
@@ -55,7 +64,7 @@ export default function Biblioteca() {
         <View style={s.linhaBusca}>
           <View style={s.busca}>
             <Icone nome="busca" tamanho={18} cor={cores.texto2} />
-            <TextInput value={busca} onChangeText={setBusca} placeholder="Buscar (ex.: supino, leg press)" placeholderTextColor={cores.texto3}
+            <TextInput value={busca} onChangeText={setBusca} placeholder="Buscar exercício" placeholderTextColor={cores.texto3}
               style={s.buscaInput} autoCorrect={false} returnKeyType="search" accessibilityLabel="Buscar exercício" />
             {busca.length > 0 && (
               <Pressable onPress={() => setBusca('')} hitSlop={10} accessibilityRole="button" accessibilityLabel="Limpar busca">
@@ -69,32 +78,37 @@ export default function Biblioteca() {
           </Pressable>
         </View>
 
-        {/* Grupos musculares: atalho rápido (quebra em linhas, funciona no PC e no celular) */}
-        {!ativos.length && !busca && (
-          <View style={s.atalhos}>
-            {grupos.map((g) => (
-              <Pressable key={g.nome} onPress={() => setF({ grupo: g.nome })} style={({ pressed }) => [s.atalho, pressed && { opacity: 0.7 }]}>
-                <Text style={s.atalhoTexto}>{g.nome}</Text>
-              </Pressable>
-            ))}
-            <Pressable onPress={() => setF({ favoritos: true })} style={[s.atalho, s.atalhoRoxo]}>
-              <Text style={[s.atalhoTexto, { color: cores.roxoEscuro }]}>★ Favoritos</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {ativos.length > 0 && (
-          <View style={s.ativos}>
-            {ativos.map((a) => (
-              <Pressable key={a.texto} onPress={a.limpar} style={s.ativo} accessibilityLabel={`Tirar filtro ${a.texto}`}>
-                <Text style={s.ativoTexto}>{a.texto}</Text>
-                <Icone nome="fechar" tamanho={14} cor={cores.textoClaro} />
-              </Pressable>
-            ))}
-            <Text onPress={() => setF({})} style={s.limparTudo}>Limpar</Text>
-          </View>
-        )}
       </View>
+
+      {/* Filtros compactos em faixas que rolam para o lado: sobra mais tela para a lista */}
+      {busca.trim() ? (
+        <Text style={s.buscando}>Buscando em todos os exercícios</Text>
+      ) : (
+        <View style={s.filtros}>
+          <FaixaRolavel selecionado={f.grupo ? grupos.findIndex((g) => g.nome === f.grupo) + (f.foco ? 3 : 2) : 0}>
+            {f.foco ? (
+              <Chip pequeno escuro ativo texto={`${f.foco === 'todos' ? 'Foco feminino' : `Foco: ${NOME_FOCO[f.foco] ?? f.foco}`}  ✕`}
+                onPress={() => setF((x) => ({ ...x, foco: undefined }))} />
+            ) : null}
+            <Chip pequeno texto="Todos" ativo={!f.grupo && !f.favoritos} onPress={() => setF((x) => ({ foco: x.foco }))} />
+            <Chip pequeno texto={`★ Favoritos${favoritos.size ? ` ${favoritos.size}` : ''}`} ativo={!!f.favoritos}
+              onPress={() => setF((x) => ({ ...x, favoritos: x.favoritos ? undefined : true, aparelho: undefined }))} />
+            {grupos.map((g) => (
+              <Chip pequeno key={g.nome} texto={g.nome} ativo={f.grupo === g.nome}
+                onPress={() => setF((x) => ({ ...x, grupo: x.grupo === g.nome ? undefined : g.nome, aparelho: undefined }))} />
+            ))}
+          </FaixaRolavel>
+          {f.grupo && aparelhos.length > 1 ? (
+            <FaixaRolavel key={f.grupo}>
+              <Chip pequeno escuro texto="Todos os aparelhos" ativo={!f.aparelho} onPress={() => setF((x) => ({ ...x, aparelho: undefined }))} />
+              {aparelhos.map(([nome, n]) => (
+                <Chip pequeno escuro key={nome} texto={nome} contagem={n} ativo={f.aparelho === nome}
+                  onPress={() => setF((x) => ({ ...x, aparelho: x.aparelho === nome ? undefined : nome }))} />
+              ))}
+            </FaixaRolavel>
+          ) : null}
+        </View>
+      )}
 
       <SectionList
         sections={secoes}
@@ -201,13 +215,15 @@ function PainelFiltros({
 }
 
 const s = StyleSheet.create({
-  cabecalho: { paddingHorizontal: 20, paddingTop: 12, gap: 12, paddingBottom: 8 },
+  cabecalho: { paddingHorizontal: 16, paddingTop: 10, gap: 10, paddingBottom: 8 },
   sub: { fontFamily: fontes.regular, fontSize: 13, color: cores.texto2, marginTop: 2 },
   linhaBusca: { flexDirection: 'row', gap: 8 },
-  busca: { flex: 1, height: 46, borderRadius: 12, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12 },
-  buscaInput: { flex: 1, fontFamily: fontes.regular, fontSize: 15, color: cores.texto, paddingVertical: 0, minWidth: 0 },
-  filtrosBotao: { height: 46, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.cartao, justifyContent: 'center' },
+  busca: { flex: 1, height: 44, borderRadius: 12, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12 },
+  buscaInput: { flex: 1, fontFamily: fontes.regular, fontSize: 16, color: cores.texto, paddingVertical: 0, minWidth: 0 },
+  filtrosBotao: { height: 44, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.cartao, justifyContent: 'center' },
   filtrosTexto: { fontFamily: fontes.semi, fontSize: 14, color: cores.texto },
+  filtros: { gap: 6, paddingBottom: 8, borderBottomWidth: 1, borderColor: cores.borda },
+  buscando: { fontFamily: fontes.media, fontSize: 12, color: cores.texto2, paddingHorizontal: 16, paddingBottom: 8 },
   atalhos: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   atalho: { paddingHorizontal: 12, height: 32, borderRadius: raio.pill, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, justifyContent: 'center' },
   atalhoRoxo: { backgroundColor: cores.lilas, borderColor: cores.lilas },
@@ -216,7 +232,7 @@ const s = StyleSheet.create({
   ativo: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 12, paddingRight: 10, height: 32, borderRadius: raio.pill, backgroundColor: cores.roxo },
   ativoTexto: { fontFamily: fontes.semi, fontSize: 13, color: cores.textoClaro },
   limparTudo: { fontFamily: fontes.semi, fontSize: 13, color: cores.roxo, padding: 6 },
-  secao: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, backgroundColor: cores.fundo, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 8 },
+  secao: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, backgroundColor: cores.fundo, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6 },
   secaoTitulo: { flex: 1, fontFamily: fontes.negrito, fontSize: 15, color: cores.texto },
   secaoTotal: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2 },
   vazio: { alignItems: 'center', gap: 10, padding: 40 },

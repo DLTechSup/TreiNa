@@ -63,8 +63,13 @@ const tags = [
   '<meta name="description" content="TreiNa: biblioteca de exercícios com vídeos, treinos e histórico." />',
 ].join('\n    ');
 
+// Celular: ocupa a tela toda (iPhone com notch/barra de gestos), sem zoom estranho e sem "flash" azul ao tocar
+const cssCelular = '<style id="treina-celular">html,body{background:#F5F4F0;-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior-y:none}*{-webkit-tap-highlight-color:transparent}input,textarea{font-size:16px}</style>';
+
 let html = fs.readFileSync(indexPath, 'utf8');
 html = html.replace(/<html lang="[^"]*"/, '<html lang="pt-BR"');
+html = html.replace(/<meta name="viewport"[^>]*>/, '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />');
+if (!html.includes('treina-celular')) html = html.replace('</head>', `    ${cssCelular}\n  </head>`);
 if (!html.includes('rel="manifest"')) html = html.replace('</head>', `    ${tags}\n  </head>`);
 fs.writeFileSync(indexPath, html);
 fs.writeFileSync(path.join(dist, '404.html'), html);

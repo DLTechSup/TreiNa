@@ -33,18 +33,20 @@ type ChipProps = {
   contagem?: number;
   ativo?: boolean;
   escuro?: boolean;
+  /** Versão menor, para faixas de filtro. */
+  pequeno?: boolean;
   onPress?: () => void;
 };
 
-export function Chip({ texto, contagem, ativo, escuro, onPress }: ChipProps) {
+export function Chip({ texto, contagem, ativo, escuro, pequeno, onPress }: ChipProps) {
   const fundo = ativo ? (escuro ? cores.escuro : cores.roxo) : cores.cartao;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityState={{ selected: !!ativo }}
-      style={({ pressed }) => [estilos.chip, { backgroundColor: fundo, borderColor: ativo ? fundo : cores.borda }, pressed && { opacity: 0.7 }]}>
-      <Text style={[estilos.chipTexto, ativo && { color: cores.textoClaro, fontFamily: fontes.semi }]}>
+      style={({ pressed }) => [estilos.chip, pequeno && estilos.chipPequeno, { backgroundColor: fundo, borderColor: ativo ? fundo : cores.borda }, pressed && { opacity: 0.7 }]}>
+      <Text style={[estilos.chipTexto, pequeno && { fontSize: 12.5 }, ativo && { color: cores.textoClaro, fontFamily: fontes.semi }]} numberOfLines={1}>
         {texto}
         {contagem !== undefined && (
           <Text style={{ color: ativo ? (escuro ? cores.lima : cores.lilas) : cores.texto2 }}>  {contagem}</Text>
@@ -145,6 +147,7 @@ export const estilos = StyleSheet.create({
   rotulo: { fontFamily: fontes.negrito, fontSize: 13, color: cores.texto },
   logo: { fontFamily: fontes.titulo, letterSpacing: -0.3 },
   chip: { height: 36, paddingHorizontal: 12, borderRadius: raio.pill, borderWidth: 1, justifyContent: 'center' },
+  chipPequeno: { height: 32, paddingHorizontal: 11 },
   chipTexto: { fontFamily: fontes.media, fontSize: 13, color: cores.texto },
   botao: { height: 50, borderRadius: raio.m, alignItems: 'center', justifyContent: 'center', borderColor: cores.texto, paddingHorizontal: 16 },
   botaoTexto: { fontFamily: fontes.semi, fontSize: 15 },

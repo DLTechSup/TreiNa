@@ -159,11 +159,11 @@ export default function EditarDia() {
                     <Text style={s.itemNome} numberOfLines={2}>{i + 1}. {e?.nome ?? it.exercicio_id}</Text>
                     <Text style={s.itemInfo} numberOfLines={1}>{e?.grupo} · {e?.equipamento}</Text>
                   </View>
-                  <View style={s.acoes}>
-                    <Pressable onPress={() => mover(i, -1)} style={s.acao} hitSlop={4} accessibilityLabel="Subir"><Text style={s.acaoTexto}>↑</Text></Pressable>
-                    <Pressable onPress={() => mover(i, 1)} style={s.acao} hitSlop={4} accessibilityLabel="Descer"><Text style={s.acaoTexto}>↓</Text></Pressable>
-                    <Pressable onPress={() => remover(it.id)} style={s.acao} hitSlop={4} accessibilityLabel="Remover"><Icone nome="fechar" tamanho={16} cor="#C2410C" /></Pressable>
+                  <View style={s.acoesSetas}>
+                    <Pressable onPress={() => mover(i, -1)} style={[s.acao, i === 0 && { opacity: 0.35 }]} hitSlop={2} accessibilityLabel="Subir"><Text style={s.acaoTexto}>↑</Text></Pressable>
+                    <Pressable onPress={() => mover(i, 1)} style={[s.acao, i === itens.length - 1 && { opacity: 0.35 }]} hitSlop={2} accessibilityLabel="Descer"><Text style={s.acaoTexto}>↓</Text></Pressable>
                   </View>
+                  <Pressable onPress={() => remover(it.id)} style={[s.acao, { alignSelf: 'flex-start' }]} hitSlop={4} accessibilityLabel="Remover"><Icone nome="fechar" tamanho={16} cor="#C2410C" /></Pressable>
                 </View>
                 <View style={s.controles}>
                   <Contador rotulo="Séries" valor={it.series} min={1} max={12} largura={34} onMudar={(v) => atualizar(it.id, { series: v ?? 1 })} />
@@ -224,8 +224,8 @@ const s = StyleSheet.create({
   rotulo: { fontFamily: fontes.negrito, fontSize: 13, color: cores.texto },
   rotuloPeq: { fontFamily: fontes.media, fontSize: 11, color: cores.texto2 },
   cinza: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2 },
-  input: { height: 46, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.cartao, paddingHorizontal: 12, fontFamily: fontes.media, fontSize: 15, color: cores.texto },
-  inputPeq: { height: 42, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.fundo, paddingHorizontal: 10, fontFamily: fontes.negrito, fontSize: 15, color: cores.texto, textAlign: 'center' },
+  input: { height: 46, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.cartao, paddingHorizontal: 12, fontFamily: fontes.media, fontSize: 16, color: cores.texto },
+  inputPeq: { height: 42, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.fundo, paddingHorizontal: 10, fontFamily: fontes.negrito, fontSize: 16, color: cores.texto, textAlign: 'center' },
   grupos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   linhaTitulo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   secao: { fontFamily: fontes.titulo, fontSize: 17, color: cores.texto },
@@ -235,8 +235,8 @@ const s = StyleSheet.create({
   itemTopo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   itemNome: { fontFamily: fontes.semi, fontSize: 14, color: cores.texto, lineHeight: 18 },
   itemInfo: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2, marginTop: 2 },
-  acoes: { flexDirection: 'row', gap: 2 },
-  acao: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: cores.fundo },
+  acoesSetas: { gap: 4 },
+  acao: { width: 30, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: cores.fundo },
   acaoTexto: { fontFamily: fontes.negrito, fontSize: 15, color: cores.texto },
   controles: { flexDirection: 'row', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' },
   desc: { height: 32, paddingHorizontal: 12, borderRadius: raio.pill, backgroundColor: cores.fundo, borderWidth: 1, borderColor: cores.borda, justifyContent: 'center' },

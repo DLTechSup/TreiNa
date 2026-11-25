@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Children, isValidElement, useEffect, useRef, type ReactNode } from 'react';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type ScrollViewInstance, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 
 import { cores, fontes, raio } from '@/constants/tema';
@@ -92,7 +92,7 @@ export function Segmentado<T extends string>({
       {opcoes.map((o) => (
         <Pressable key={o.valor} onPress={() => onMudar(o.valor)} style={[s.segItem, o.valor === valor && s.segAtivo]}
           accessibilityRole="button" accessibilityState={{ selected: o.valor === valor }}>
-          <Text style={[s.segTexto, o.valor === valor && s.segTextoAtivo]}>{o.texto}</Text>
+          <Text style={[s.segTexto, o.valor === valor && s.segTextoAtivo]} numberOfLines={1}>{o.texto}</Text>
         </Pressable>
       ))}
     </View>
@@ -141,9 +141,9 @@ const s = StyleSheet.create({
   contValor: { textAlign: 'center', fontFamily: fontes.negrito, fontSize: 16, color: cores.texto, paddingVertical: 0, height: 40 },
   contSufixo: { fontFamily: fontes.media, fontSize: 12, color: cores.texto2, marginLeft: -4 },
   seg: { flexDirection: 'row', backgroundColor: cores.cinza, borderRadius: raio.pill, padding: 3 },
-  segItem: { flex: 1, height: 34, borderRadius: raio.pill, alignItems: 'center', justifyContent: 'center' },
+  segItem: { flexGrow: 1, flexBasis: 0, minWidth: 0, height: 34, paddingHorizontal: 4, borderRadius: raio.pill, alignItems: 'center', justifyContent: 'center' },
   segAtivo: { backgroundColor: cores.cartao, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
-  segTexto: { fontFamily: fontes.media, fontSize: 13, color: cores.texto2 },
+  segTexto: { fontFamily: fontes.media, fontSize: 12.5, color: cores.texto2 },
   segTextoAtivo: { fontFamily: fontes.semi, color: cores.texto },
   numero: { flex: 1, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, borderRadius: raio.m, padding: 12, gap: 2 },
   numeroValor: { fontFamily: fontes.titulo, fontSize: 22, color: cores.texto },
@@ -152,3 +152,52 @@ const s = StyleSheet.create({
   secaoTitulo: { fontFamily: fontes.titulo, fontSize: 17, color: cores.texto },
   secaoAcao: { fontFamily: fontes.semi, fontSize: 13, color: cores.roxo, padding: 4 },
 });
+
+/**
+ * Faixa de chips em uma linha só, rolando para o lado (ocupa pouca altura no celular).
+ * `selecionado` = posição do chip ativo: a faixa rola até ele se estiver fora da tela.
+ * No computador, a rodinha do mouse também rola a faixa para o lado.
+ */
+export function FaixaRolavel({ children, style, selecionado }: { children: ReactNode; style?: StyleProp<ViewStyle>; selecionado?: number }) {
+  const ref = useRef<ScrollViewInstance>(null);
+  const itens = useRef<{ x: number; w: number }[]>([]);
+  const vista = useRef({ x: 0, w: 0 });
+  const filhos = Children.toArray(children);
+
+  useEffect(() => {
+    if (selecionado == null || selecionado < 0) return;
+    const t = setTimeout(() => {
+      const it = itens.current[selecionado];
+      const v = vista.current;
+      if (!it || !v.w) return;
+      if (it.x < v.x + 8 || it.x + it.w > v.x + v.w - 8) ref.current?.scrollTo({ x: Math.max(0, it.x - 48), animated: true });
+    }, 80);
+    return () => clearTimeout(t);
+  }, [selecionado]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const no = (ref.current as unknown as { getScrollableNode?: () => HTMLElement | null })?.getScrollableNode?.();
+    if (!no) return;
+    const rodinha = (e: WheelEvent) => {
+      if (no.scrollWidth <= no.clientWidth || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      no.scrollLeft += e.deltaY;
+      e.preventDefault();
+    };
+    no.addEventListener('wheel', rodinha, { passive: false });
+    return () => no.removeEventListener('wheel', rodinha);
+  }, []);
+
+  return (
+    <ScrollView ref={ref} horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled"
+      scrollEventThrottle={32} onScroll={(e) => { vista.current.x = e.nativeEvent.contentOffset.x; }}
+      onLayout={(e) => { vista.current.w = e.nativeEvent.layout.width; }}
+      style={[{ flexGrow: 0 }, style]} contentContainerStyle={{ gap: 6, paddingHorizontal: 16, alignItems: 'center' }}>
+      {filhos.map((c, i) => (
+        <View key={isValidElement(c) && c.key != null ? c.key : i} onLayout={(e) => { itens.current[i] = { x: e.nativeEvent.layout.x, w: e.nativeEvent.layout.width }; }}>
+          {c}
+        </View>
+      ))}
+    </ScrollView>
+  );
+}

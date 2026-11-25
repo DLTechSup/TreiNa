@@ -4,6 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 
 import { Icone } from './Icone';
+import { FaixaRolavel } from './pecas';
 import { Botao, Chip } from './ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { filtrar, grupos, type Exercicio } from '@/data';
@@ -42,7 +43,7 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
   const aparelhos = useMemo(() => {
     const m = new Map<string, number>();
     filtrar({ grupo }).forEach((e) => m.set(e.equipamento, (m.get(e.equipamento) ?? 0) + 1));
-    return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [grupo]);
   const ordemGrupos = useMemo(
     () => [...gruposDoDia, ...grupos.map((g) => g.nome).filter((g) => !gruposDoDia.includes(g))],
@@ -55,7 +56,8 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
   return (
     <Modal visible={visivel} animationType="slide" onRequestClose={onFechar} presentationStyle="fullScreen">
       <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1, backgroundColor: cores.fundo }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: cores.fundo, alignItems: 'center' }}>
+          <View style={s.coluna}>
           <View style={s.topo}>
             <Pressable onPress={onFechar} style={s.fechar} accessibilityLabel="Fechar" hitSlop={8}>
               <Icone nome="fechar" tamanho={22} />
@@ -70,22 +72,23 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
             {busca ? <Pressable onPress={() => setBusca('')} hitSlop={8}><Icone nome="fechar" tamanho={16} cor={cores.texto2} /></Pressable> : null}
           </View>
 
-          {busca.trim() ? (
-            <Text style={s.buscando}>Buscando em todos os grupos e aparelhos</Text>
-          ) : (<>
-          <View style={s.chips}>
-            <Chip texto="Todos" ativo={!grupo} onPress={() => { setGrupo(undefined); setEquip(undefined); }} />
-            {ordemGrupos.map((g) => (
-              <Chip key={g} texto={g} ativo={grupo === g} onPress={() => { setGrupo(grupo === g ? undefined : g); setEquip(undefined); }} />
-            ))}
-          </View>
-          <View style={[s.chips, { paddingTop: 0 }]}>
-            <Chip texto="Qualquer aparelho" escuro ativo={!equip} onPress={() => setEquip(undefined)} />
-            {aparelhos.map(([nome, n]) => (
-              <Chip key={nome} texto={nome} contagem={n} escuro ativo={equip === nome} onPress={() => setEquip(equip === nome ? undefined : nome)} />
-            ))}
-          </View>
-          </>)}
+          {/* Filtros compactos: uma linha para o grupo e outra para o aparelho (rolam para o lado) */}
+          {!busca.trim() && (
+            <View style={s.filtros}>
+              <FaixaRolavel selecionado={grupo ? ordemGrupos.indexOf(grupo) + 1 : 0}>
+                <Chip pequeno texto="Todos" ativo={!grupo} onPress={() => { setGrupo(undefined); setEquip(undefined); }} />
+                {ordemGrupos.map((g) => (
+                  <Chip pequeno key={g} texto={g} ativo={grupo === g} onPress={() => { setGrupo(grupo === g ? undefined : g); setEquip(undefined); }} />
+                ))}
+              </FaixaRolavel>
+              <FaixaRolavel key={grupo ?? 'todos'}>
+                <Chip pequeno escuro texto="Todos os aparelhos" ativo={!equip} onPress={() => setEquip(undefined)} />
+                {aparelhos.map(([nome, n]) => (
+                  <Chip pequeno escuro key={nome} texto={nome} contagem={n} ativo={equip === nome} onPress={() => setEquip(equip === nome ? undefined : nome)} />
+                ))}
+              </FaixaRolavel>
+            </View>
+          )}
 
           <FlatList
             data={lista}
@@ -94,6 +97,13 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
             windowSize={7}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ paddingBottom: 100 }}
+            ListHeaderComponent={
+              <Text style={s.contagem}>
+                {busca.trim()
+                  ? `${lista.length} encontrado${lista.length === 1 ? '' : 's'} em todos os grupos`
+                  : `${lista.length} exercício${lista.length === 1 ? '' : 's'}${grupo ? ` de ${grupo}` : ''}${equip ? ` · ${equip}` : ''}`}
+              </Text>
+            }
             ListEmptyComponent={<Text style={s.vazio}>Nenhum exercício com esses filtros.</Text>}
             renderItem={({ item }) => (
               <Linha e={item} marcado={marcados.includes(item.id)} jaNoDia={jaNoDia.has(item.id)} onPress={() => alternar(item.id)} />
@@ -106,6 +116,7 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
               desativado={!marcados.length}
               onPress={() => onAdicionar(marcados)}
             />
+          </View>
           </View>
         </SafeAreaView>
       </SafeAreaProvider>
@@ -130,19 +141,20 @@ function Linha({ e, marcado, jaNoDia, onPress }: { e: Exercicio; marcado: boolea
 }
 
 const s = StyleSheet.create({
-  topo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 6 },
+  coluna: { flex: 1, width: '100%', maxWidth: 560 },
+  topo: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 8, paddingVertical: 2 },
   fechar: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   titulo: { fontFamily: fontes.titulo, fontSize: 18, color: cores.texto },
-  busca: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, paddingHorizontal: 12, height: 46, borderRadius: raio.m, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda },
-  buscaInput: { flex: 1, fontFamily: fontes.media, fontSize: 15, color: cores.texto, height: 44 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: 16, paddingVertical: 8 },
+  busca: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, paddingHorizontal: 12, height: 42, borderRadius: raio.m, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda },
+  buscaInput: { flex: 1, minWidth: 0, fontFamily: fontes.media, fontSize: 16, color: cores.texto, height: 40 },
+  filtros: { gap: 6, paddingTop: 8, paddingBottom: 8, borderBottomWidth: 1, borderColor: cores.borda },
+  contagem: { fontFamily: fontes.media, fontSize: 12, color: cores.texto2, paddingHorizontal: 16, paddingVertical: 8 },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: cores.cartao, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: cores.borda },
   img: { width: 56, height: 56, borderRadius: 10, backgroundColor: cores.cinza },
   nome: { fontFamily: fontes.semi, fontSize: 14, color: cores.texto, lineHeight: 18 },
   info: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2, marginTop: 2 },
   check: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: cores.borda, alignItems: 'center', justifyContent: 'center' },
   checkAtivo: { backgroundColor: cores.roxo, borderColor: cores.roxo },
-  buscando: { fontFamily: fontes.media, fontSize: 12, color: cores.texto2, paddingHorizontal: 16, paddingVertical: 10 },
   vazio: { textAlign: 'center', padding: 32, fontFamily: fontes.regular, color: cores.texto2 },
-  rodape: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: 16, paddingBottom: 24, backgroundColor: 'rgba(245,244,240,0.96)', borderTopWidth: 1, borderColor: cores.borda },
+  rodape: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 16, backgroundColor: 'rgba(245,244,240,0.96)', borderTopWidth: 1, borderColor: cores.borda },
 });

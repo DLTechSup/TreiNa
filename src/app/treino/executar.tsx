@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { BackHandler, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -59,6 +59,9 @@ export default function Executar() {
   const [recordesAntes, setRecordesAntes] = useState<Map<string, number>>(new Map());
   const [salvo, setSalvo] = useState<{ duracao: number } | null>(null);
   const ultimoBip = useRef(-1);
+  const rolagem = useRef<ScrollViewInstance>(null);
+  // Vídeo se ajusta à altura do celular: depois de "Começar", diminui para os controles caberem na tela
+  const tela = useWindowDimensions();
 
   // Carga sugerida (a do plano ou a última usada) e preferência do timer de descanso
   useEffect(() => {
@@ -120,6 +123,8 @@ export default function Executar() {
   const totalSeries = useMemo(() => itens.reduce((n, i) => n + i.series, 0), [itens]);
   const tempoSerie = item ? segundosAlvo(item.repeticoes) : null;
   const ultimaSerie = item ? serie >= item.series : false;
+  const larguraVideo = Math.min(tela.width, 560) - 32;
+  const alturaVideo = Math.round(Math.max(130, Math.min(larguraVideo * 0.75, tela.height * (comecou ? 0.26 : 0.36))));
 
   const iniciarTreino = () => {
     prepararSons();
@@ -162,6 +167,7 @@ export default function Executar() {
     setSerie(Math.min(itens[i].series, todas.filter((f) => f.ordem === i).length + 1));
     setComecou(false);
     setInicioEx(0);
+    rolagem.current?.scrollTo({ y: 0, animated: false }); // novo exercício começa do topo (vídeo)
   };
 
   const proximaSerie = () => {
@@ -223,7 +229,7 @@ export default function Executar() {
   return (
     <SafeAreaView style={s.tela}>
       {fase === 'inicio' && (
-        <ScrollView contentContainerStyle={s.inicio}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={s.inicio}>
           <Pressable onPress={sair} style={s.botaoRedondo} accessibilityLabel="Voltar">
             <Icone nome="voltar" tamanho={22} cor={cores.textoClaro} />
           </Pressable>
@@ -242,8 +248,12 @@ export default function Executar() {
             ))}
           </View>
           {chaveDescanso}
-          <Botao texto="▶  Iniciar treino" tipo="lima" onPress={iniciarTreino} />
         </ScrollView>
+      )}
+      {fase === 'inicio' && (
+        <View style={s.rodape}>
+          <Botao texto="▶  Iniciar treino" tipo="lima" onPress={iniciarTreino} />
+        </View>
       )}
 
       {fase === 'treino' && item && (
@@ -264,8 +274,8 @@ export default function Executar() {
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={s.serie}>
-            <View style={s.videoCaixa}>
+          <ScrollView ref={rolagem} style={{ flex: 1 }} contentContainerStyle={s.serie}>
+            <View style={[s.videoCaixa, { height: alturaVideo }]}>
               <VideoExercicio key={item.exercicio_id} id={item.exercicio_id} />
             </View>
 
@@ -290,7 +300,6 @@ export default function Executar() {
 
             {!comecou ? (
               <>
-                <Botao texto="▶  Começar exercício" tipo="lima" onPress={comecarExercicio} />
                 <View style={s.linhaAcoes}>
                   <Text onPress={pularExercicio} style={s.acaoTexto}>Pular exercício</Text>
                   <Text onPress={() => router.push({ pathname: '/exercicio/[id]', params: { id: item.exercicio_id } })} style={s.acaoTexto}>Como fazer</Text>
@@ -340,8 +349,6 @@ export default function Executar() {
                   )}
                 </View>
 
-                <Botao texto={ultimaSerie ? (ex + 1 < itens.length ? '✓  Concluir exercício' : '✓  Concluir último exercício') : '✓  Próxima série'}
-                  tipo="lima" onPress={proximaSerie} />
                 <View style={s.linhaAcoes}>
                   <Text onPress={pularExercicio} style={s.acaoTexto}>Pular exercício</Text>
                   <Text onPress={() => router.push({ pathname: '/exercicio/[id]', params: { id: item.exercicio_id } })} style={s.acaoTexto}>Como fazer</Text>
@@ -352,6 +359,16 @@ export default function Executar() {
             {ex + 1 < itens.length && <Text style={s.aSeguir}>A seguir: {porId(itens[ex + 1].exercicio_id)?.nome}</Text>}
             {chaveDescanso}
           </ScrollView>
+
+          {/* Botão principal sempre visível embaixo (fácil de alcançar com o polegar) */}
+          <View style={s.rodape}>
+            {!comecou ? (
+              <Botao texto="▶  Começar exercício" tipo="lima" onPress={comecarExercicio} />
+            ) : (
+              <Botao texto={ultimaSerie ? (ex + 1 < itens.length ? '✓  Concluir exercício' : '✓  Concluir último exercício') : '✓  Próxima série'}
+                tipo="lima" onPress={proximaSerie} />
+            )}
+          </View>
         </>
       )}
 
@@ -482,8 +499,9 @@ const s = StyleSheet.create({
   chave: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: cores.escuro2, borderRadius: raio.m, padding: 14 },
   chaveTitulo: { fontFamily: fontes.semi, fontSize: 14, color: cores.textoClaro },
   chaveTexto: { fontFamily: fontes.regular, fontSize: 12, color: cores.textoClaro2, marginTop: 2, lineHeight: 17 },
-  serie: { padding: 16, gap: 14, paddingBottom: 32 },
-  videoCaixa: { width: '100%', aspectRatio: 4 / 3, backgroundColor: '#FFFFFF', borderRadius: raio.g, overflow: 'hidden' },
+  serie: { padding: 16, gap: 12, paddingBottom: 24 },
+  videoCaixa: { width: '100%', backgroundColor: '#FFFFFF', borderRadius: raio.g, overflow: 'hidden' },
+  rodape: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 12, borderTopWidth: 1, borderColor: cores.escuro2, backgroundColor: cores.escuro },
   contagem: { fontFamily: fontes.negrito, fontSize: 11, color: cores.lima, letterSpacing: 0.6 },
   bolinhas: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   bolinha: { width: 32, height: 32, borderRadius: 16, backgroundColor: cores.escuro2, alignItems: 'center', justifyContent: 'center' },

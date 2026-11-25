@@ -88,7 +88,7 @@ export default function Treinos() {
                       : <Text style={[s.siglaTexto, ehHoje && { color: cores.textoClaro }]}>{SIGLAS_DIAS[d.dia]}</Text>}
                   </View>
                   <View style={{ flex: 1, gap: 2 }}>
-                    <Text style={s.diaNome} numberOfLines={1}>{temTreino ? d.nome || 'Treino' : 'Descanso'}</Text>
+                    <Text style={s.diaNome} numberOfLines={2}>{temTreino ? d.nome || 'Treino' : 'Descanso'}</Text>
                     <Text style={s.diaInfo} numberOfLines={1}>
                       {temTreino ? `${d.itens.length} exercícios · ~${minutosEstimados(d.itens)} min · ${d.grupos.join(', ')}` : 'Toque para montar um treino neste dia'}
                     </Text>
@@ -122,7 +122,7 @@ export default function Treinos() {
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={s.planoSelo}>TREINA MULHER</Text>
               <Text style={s.planoNome}>Glúteo, pernas e ombros com volume</Text>
-              <Text style={s.planoInfo}>2 planos prontos · academia ou em casa</Text>
+              <Text style={s.planoInfo}>Plano pronto de 4 dias · academia</Text>
             </View>
             <Miniatura id="elevacao-pelvica-com-barra" tamanho={64} raioBorda={12} />
           </Pressable>
