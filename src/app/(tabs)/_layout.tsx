@@ -1,8 +1,9 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icone, type NomeIcone } from '@/components/Icone';
 import { cores, fontes } from '@/constants/tema';
+import { useDados } from '@/db/banco';
 
 const abas: { nome: string; titulo: string; icone: NomeIcone }[] = [
   { nome: 'index', titulo: 'Início', icone: 'inicio' },
@@ -14,6 +15,10 @@ const abas: { nome: string; titulo: string; icone: NomeIcone }[] = [
 
 export default function LayoutAbas() {
   const insets = useSafeAreaInsets();
+  const { pronto, perfil } = useDados();
+  if (!pronto) return null;
+  // Primeira vez (sem nome): abre a tela de boas-vindas / cadastro
+  if (!perfil.nome) return <Redirect href="/boas-vindas" />;
   return (
     <Tabs
       screenOptions={{

@@ -72,8 +72,8 @@ export function CartaoNuvem() {
       {!c.usuario ? (
         <>
           <Text style={s.texto}>
-            Entre com sua conta Google para guardar perfil, favoritos, treinos e histórico na nuvem.
-            Se trocar de celular ou apagar o app, é só entrar de novo que tudo volta.
+            A conta Google serve só para guardar os seus dados de treino (perfil, treinos e histórico) na nuvem.
+            Se trocar de celular ou apagar o app, é só entrar de novo que tudo volta. Nada é publicado nem compartilhado.
           </Text>
           <Pressable
             onPress={c.entrar}

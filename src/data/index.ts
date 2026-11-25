@@ -37,7 +37,10 @@ function contar<T extends string>(valores: T[]) {
   return [...mapa.entries()].map(([nome, total]) => ({ nome, total }));
 }
 
-export const grupos = contar(exercicios.map((e) => e.grupo)).sort((a, b) => b.total - a.total);
+/** Ordem dos grupos no app: academia primeiro, cardio e mobilidade no fim. */
+export const ORDEM_GRUPOS = ['Peito', 'Costas', 'Ombros', 'Pernas', 'Glúteos', 'Bíceps', 'Tríceps', 'Trapézio', 'Panturrilha', 'Antebraço', 'Cardio', 'Mobilidade'];
+const posGrupo = (g: string) => { const i = ORDEM_GRUPOS.indexOf(g); return i < 0 ? 99 : i; };
+export const grupos = contar(exercicios.map((e) => e.grupo)).sort((a, b) => posGrupo(a.nome) - posGrupo(b.nome));
 export const equipamentos = contar(exercicios.map((e) => e.equipamento)).sort((a, b) => b.total - a.total);
 export const focos = ['Glúteo', 'Perna', 'Posterior', 'Ombro'].map((nome) => ({
   nome,
@@ -76,7 +79,7 @@ export function emSecoes(lista: Exercicio[], chave: 'grupo' | 'padrao' | 'foco')
   });
   return [...mapa.entries()]
     .map(([titulo, data]) => ({ titulo, data }))
-    .sort((a, b) => b.data.length - a.data.length);
+    .sort((a, b) => (chave === 'grupo' ? posGrupo(a.titulo) - posGrupo(b.titulo) : b.data.length - a.data.length));
 }
 
 /** Variações: mesmo padrão de movimento; as do mesmo grupo vêm primeiro. */

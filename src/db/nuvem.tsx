@@ -37,6 +37,8 @@ type EstadoNuvem = {
   mensagem: string | null;
   conflito: { nuvemEm: string; dispositivo: string | null } | null;
   entrando: boolean;
+  /** true depois da primeira conferência aparelho x nuvem desta conta (deu certo ou não). */
+  sincronizado: boolean;
 };
 
 export type Conta = EstadoNuvem & {
@@ -171,6 +173,7 @@ function descreverErro(e: unknown): { status: 'offline' | 'erro'; mensagem: stri
 class MotorBackup {
   private estado: EstadoNuvem = {
     usuario: null, status: 'desligado', ultimoBackup: null, mensagem: null, conflito: null, entrando: false,
+    sincronizado: false,
   };
   private ouvintes = new Set<() => void>();
   private uid: string | null = null;
@@ -203,13 +206,13 @@ class MotorBackup {
         this.uid = null;
         this.verificado = false;
         this.limparTimer();
-        this.mudar({ usuario: null, status: 'desligado', conflito: null });
+        this.mudar({ usuario: null, status: 'desligado', conflito: null, sincronizado: false });
         return;
       }
       const trocou = sessao.user.id !== this.uid;
       if (trocou) this.verificado = false;
       this.uid = sessao.user.id;
-      this.mudar({ usuario: extrairUsuario(sessao.user) });
+      this.mudar(trocou ? { usuario: extrairUsuario(sessao.user), sincronizado: false } : { usuario: extrairUsuario(sessao.user) });
       // Não chamar o Supabase dentro deste aviso (recomendação deles): agenda para logo depois.
       if (trocou || (evento === 'SIGNED_IN' && Date.now() - this.ultimaSinc > 30_000)) {
         setTimeout(() => this.sincronizar(), 0);
@@ -265,7 +268,9 @@ class MotorBackup {
   }
 
   private sincronizar() {
-    return this.enfileirar(() => this.fazerSincronizacao()).catch((e) => this.falhou(e));
+    return this.enfileirar(() => this.fazerSincronizacao())
+      .catch((e) => this.falhou(e))
+      .finally(() => { if (this.uid && !this.estado.sincronizado) this.mudar({ sincronizado: true }); });
   }
 
   private enviar() {

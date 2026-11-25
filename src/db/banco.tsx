@@ -2,13 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from './sqlite';
 
 /* ------------------------------------------------------------------ */
-/* Banco local (fica só no celular)                                    */
+/* Banco local (fica no celular / navegador)                           */
 /* ------------------------------------------------------------------ */
 
-const VERSAO = 2;
+const VERSAO = 3;
 
-/** Tabelas que vão para o backup na nuvem (as próximas fases acrescentam treinos, sessões...). */
-export const TABELAS_BACKUP = ['perfil', 'favoritos'] as const;
+/** Tabelas que vão para o backup na nuvem. */
+export const TABELAS_BACKUP = ['perfil', 'favoritos', 'plano_dias', 'plano_itens', 'sessoes', 'sessao_series'] as const;
 
 async function migrar(db: SQLiteDatabase) {
   const linha = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
@@ -39,7 +39,33 @@ async function migrar(db: SQLiteDatabase) {
     `);
     versao = 2;
   }
-  // Próximas fases: treinos, sessões e histórico entram aqui como versão 3, 4...
+  if (versao === 2) {
+    // Treino da semana (dia 1 = segunda ... 7 = domingo) e histórico de treinos feitos.
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS plano_dias (
+        dia INTEGER PRIMARY KEY CHECK (dia BETWEEN 1 AND 7),
+        nome TEXT, grupos TEXT, atualizado_em TEXT
+      );
+      CREATE TABLE IF NOT EXISTS plano_itens (
+        id TEXT PRIMARY KEY NOT NULL, dia INTEGER NOT NULL, ordem INTEGER NOT NULL,
+        exercicio_id TEXT NOT NULL, series INTEGER NOT NULL, repeticoes TEXT NOT NULL,
+        carga REAL, descanso INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS plano_itens_dia ON plano_itens (dia, ordem);
+      CREATE TABLE IF NOT EXISTS sessoes (
+        id TEXT PRIMARY KEY NOT NULL, data TEXT NOT NULL, dia_semana INTEGER, nome TEXT,
+        iniciado_em TEXT NOT NULL, concluido_em TEXT, duracao_s INTEGER
+      );
+      CREATE INDEX IF NOT EXISTS sessoes_data ON sessoes (data);
+      CREATE TABLE IF NOT EXISTS sessao_series (
+        id TEXT PRIMARY KEY NOT NULL, sessao_id TEXT NOT NULL, exercicio_id TEXT NOT NULL,
+        ordem INTEGER NOT NULL, serie INTEGER NOT NULL, repeticoes INTEGER, carga REAL, feito_em TEXT
+      );
+      CREATE INDEX IF NOT EXISTS sessao_series_sessao ON sessao_series (sessao_id);
+      CREATE INDEX IF NOT EXISTS sessao_series_exercicio ON sessao_series (exercicio_id);
+    `);
+    versao = 3;
+  }
   await db.execAsync(`PRAGMA user_version = ${versao}`);
 }
 
@@ -77,8 +103,10 @@ async function registrarAlteracao(db: SQLiteDatabase) {
   ouvintes.forEach((fn) => fn());
 }
 
+export const novoId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+
 /* ------------------------------------------------------------------ */
-/* Perfil e favoritos compartilhados entre as telas                    */
+/* Tipos                                                               */
 /* ------------------------------------------------------------------ */
 
 export type Perfil = {
@@ -99,29 +127,117 @@ export const perfilVazio: Perfil = {
   objetivo: null, nivel: null, dias_semana: null, tempo_treino: null, local: null,
 };
 
+export type ItemPlano = {
+  id: string;
+  exercicio_id: string;
+  series: number;
+  repeticoes: string;
+  carga: number | null;
+  descanso: number;
+};
+
+export type DiaPlano = { dia: number; nome: string; grupos: string[]; itens: ItemPlano[] };
+
+/** Série feita no treino (vai para o histórico). */
+export type SerieFeita = { exercicio_id: string; ordem: number; serie: number; repeticoes: number | null; carga: number | null; feito_em: string };
+
+export type SessaoNova = {
+  data: string; // AAAA-MM-DD (dia local)
+  dia_semana: number | null;
+  nome: string;
+  iniciado_em: string;
+  concluido_em: string;
+  duracao_s: number;
+  series: SerieFeita[];
+};
+
+export const NOMES_DIAS = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+export const SIGLAS_DIAS = ['', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+/** Dia da semana do TreiNa (1 = segunda ... 7 = domingo) de uma data. */
+export const diaDaSemana = (d: Date) => ((d.getDay() + 6) % 7) + 1;
+
+const semanaVazia = (): DiaPlano[] => [1, 2, 3, 4, 5, 6, 7].map((dia) => ({ dia, nome: '', grupos: [], itens: [] }));
+
+/* ------------------------------------------------------------------ */
+/* Contexto com os dados da pessoa                                     */
+/* ------------------------------------------------------------------ */
+
 type Dados = {
   pronto: boolean;
   perfil: Perfil;
   salvarPerfil: (p: Perfil) => Promise<void>;
   favoritos: Set<string>;
   alternarFavorito: (id: string) => Promise<void>;
+  /** Os 7 dias da semana (índice 0 = segunda). */
+  semana: DiaPlano[];
+  salvarDia: (d: DiaPlano) => Promise<void>;
+  /** Troca a semana inteira (aceitar um plano sugerido). Dias que não vierem ficam de descanso. */
+  aplicarSemana: (dias: DiaPlano[]) => Promise<void>;
+  registrarSessao: (s: SessaoNova) => Promise<string>;
+  apagarSessao: (id: string) => Promise<void>;
+  /** Sobe a cada treino salvo/apagado: as telas do histórico usam para recarregar. */
+  versaoHistorico: number;
   /** Relê tudo do banco (depois de restaurar um backup). */
   recarregar: () => Promise<void>;
 };
 
 const Contexto = createContext<Dados | null>(null);
 
+async function lerSemana(db: SQLiteDatabase): Promise<DiaPlano[]> {
+  const semana = semanaVazia();
+  const dias = await db.getAllAsync<{ dia: number; nome: string | null; grupos: string | null }>('SELECT dia, nome, grupos FROM plano_dias');
+  for (const d of dias) {
+    const alvo = semana[d.dia - 1];
+    if (!alvo) continue;
+    alvo.nome = d.nome ?? '';
+    try { alvo.grupos = d.grupos ? JSON.parse(d.grupos) : []; } catch { alvo.grupos = []; }
+  }
+  const itens = await db.getAllAsync<ItemPlano & { dia: number }>(
+    'SELECT id, dia, exercicio_id, series, repeticoes, carga, descanso FROM plano_itens ORDER BY dia, ordem',
+  );
+  for (const it of itens) {
+    semana[it.dia - 1]?.itens.push({
+      id: it.id, exercicio_id: it.exercicio_id, series: it.series, repeticoes: String(it.repeticoes),
+      carga: it.carga, descanso: it.descanso,
+    });
+  }
+  return semana;
+}
+
+async function gravarDia(db: SQLiteDatabase, d: DiaPlano) {
+  await db.runAsync('DELETE FROM plano_itens WHERE dia = ?', d.dia);
+  if (!d.itens.length && !d.nome.trim()) {
+    await db.runAsync('DELETE FROM plano_dias WHERE dia = ?', d.dia);
+    return;
+  }
+  await db.runAsync(
+    `INSERT OR REPLACE INTO plano_dias (dia, nome, grupos, atualizado_em) VALUES (?, ?, ?, datetime('now'))`,
+    d.dia, d.nome.trim(), JSON.stringify(d.grupos),
+  );
+  let ordem = 0;
+  for (const it of d.itens) {
+    await db.runAsync(
+      'INSERT OR REPLACE INTO plano_itens (id, dia, ordem, exercicio_id, series, repeticoes, carga, descanso) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      it.id || novoId(), d.dia, ordem++, it.exercicio_id, it.series, it.repeticoes, it.carga, it.descanso,
+    );
+  }
+}
+
 function DadosProvider({ children }: { children: ReactNode }) {
   const db = useSQLiteContext();
   const [pronto, setPronto] = useState(false);
   const [perfil, setPerfil] = useState<Perfil>(perfilVazio);
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
+  const [semana, setSemana] = useState<DiaPlano[]>(semanaVazia);
+  const [versaoHistorico, setVersaoHistorico] = useState(0);
 
   const recarregar = useCallback(async () => {
     const p = await db.getFirstAsync<Perfil>('SELECT * FROM perfil WHERE id = 1');
     setPerfil(p ? { ...perfilVazio, ...p, nome: p.nome ?? '' } : perfilVazio);
     const favs = await db.getAllAsync<{ exercicio_id: string }>('SELECT exercicio_id FROM favoritos');
     setFavoritos(new Set(favs.map((f) => f.exercicio_id)));
+    setSemana(await lerSemana(db));
+    setVersaoHistorico((v) => v + 1);
     setPronto(true);
   }, [db]);
 
@@ -162,9 +278,69 @@ function DadosProvider({ children }: { children: ReactNode }) {
     [db, favoritos],
   );
 
+  const salvarDia = useCallback(
+    async (d: DiaPlano) => {
+      await db.withTransactionAsync(() => gravarDia(db, d));
+      setSemana(await lerSemana(db));
+      await registrarAlteracao(db);
+    },
+    [db],
+  );
+
+  const aplicarSemana = useCallback(
+    async (dias: DiaPlano[]) => {
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM plano_itens');
+        await db.runAsync('DELETE FROM plano_dias');
+        for (const d of dias) await gravarDia(db, { ...d, itens: d.itens.map((i) => ({ ...i, id: novoId() })) });
+      });
+      setSemana(await lerSemana(db));
+      await registrarAlteracao(db);
+    },
+    [db],
+  );
+
+  const registrarSessao = useCallback(
+    async (s: SessaoNova) => {
+      const id = novoId();
+      await db.withTransactionAsync(async () => {
+        await db.runAsync(
+          'INSERT INTO sessoes (id, data, dia_semana, nome, iniciado_em, concluido_em, duracao_s) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          id, s.data, s.dia_semana, s.nome, s.iniciado_em, s.concluido_em, s.duracao_s,
+        );
+        for (const se of s.series) {
+          await db.runAsync(
+            'INSERT INTO sessao_series (id, sessao_id, exercicio_id, ordem, serie, repeticoes, carga, feito_em) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            novoId(), id, se.exercicio_id, se.ordem, se.serie, se.repeticoes, se.carga, se.feito_em,
+          );
+        }
+      });
+      setVersaoHistorico((v) => v + 1);
+      await registrarAlteracao(db);
+      return id;
+    },
+    [db],
+  );
+
+  const apagarSessao = useCallback(
+    async (id: string) => {
+      await db.withTransactionAsync(async () => {
+        await db.runAsync('DELETE FROM sessao_series WHERE sessao_id = ?', id);
+        await db.runAsync('DELETE FROM sessoes WHERE id = ?', id);
+      });
+      setVersaoHistorico((v) => v + 1);
+      await registrarAlteracao(db);
+    },
+    [db],
+  );
+
   const valor = useMemo(
-    () => ({ pronto, perfil, salvarPerfil, favoritos, alternarFavorito, recarregar }),
-    [pronto, perfil, salvarPerfil, favoritos, alternarFavorito, recarregar],
+    () => ({
+      pronto, perfil, salvarPerfil, favoritos, alternarFavorito, semana, salvarDia, aplicarSemana,
+      registrarSessao, apagarSessao, versaoHistorico, recarregar,
+    }),
+    [pronto, perfil, salvarPerfil, favoritos, alternarFavorito, semana, salvarDia, aplicarSemana,
+      registrarSessao, apagarSessao, versaoHistorico, recarregar],
   );
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

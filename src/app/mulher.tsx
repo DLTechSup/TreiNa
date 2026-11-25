@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { Icone } from '@/components/Icone';
-import { Logo, Miniatura, TopoVoltar } from '@/components/ui';
+import { Botao, Logo, Miniatura, TopoVoltar } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { focos, porId, programas } from '@/data';
 
@@ -12,13 +12,13 @@ const NOME_FOCO: Record<string, string> = { Glúteo: 'Glúteo', Perna: 'Pernas',
 
 export default function TreinaMulher() {
   const router = useRouter();
-  const [indice, setIndice] = useState(0);
+  const [indice] = useState(0);
   const plano = programas[indice];
   const totalEx = plano.dias.reduce((n, d) => n + d.exercicios.length, 0);
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-      <TopoVoltar titulo="Área feminina" />
+      <TopoVoltar titulo="TreiNa Mulher" />
       <ScrollView contentContainerStyle={s.conteudo}>
         <View style={s.hero}>
           <View style={{ flex: 1, gap: 6 }}>
@@ -31,14 +31,7 @@ export default function TreinaMulher() {
           <Miniatura id="elevacao-pelvica-com-barra" tamanho={96} raioBorda={14} />
         </View>
 
-        <View style={s.alternador}>
-          {programas.map((p, i) => (
-            <Pressable key={p.nome} onPress={() => setIndice(i)} style={[s.opcao, i === indice && s.opcaoAtiva]}
-              accessibilityRole="button" accessibilityState={{ selected: i === indice }}>
-              <Text style={[s.opcaoTexto, i === indice && s.opcaoTextoAtivo]}>{p.local} · {p.dias.length} dias</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Botao texto="Usar este plano na minha semana" onPress={() => router.push({ pathname: '/treino/plano/[id]', params: { id: `treina-mulher-${indice + 1}` } })} />
 
         <View style={{ gap: 8 }}>
           <Text style={s.secao}>Foco do plano</Text>
@@ -85,7 +78,7 @@ export default function TreinaMulher() {
             no topo das repetições, suba a carga (1–2 kg no ombro, 2–5 kg em glúteo e perna).
           </Text>
         </View>
-        <Text style={s.nota}>Na próxima versão você poderá adicionar este plano à sua semana e treinar com os timers.</Text>
+        <Botao texto="Usar este plano na minha semana" tipo="contorno" onPress={() => router.push({ pathname: '/treino/plano/[id]', params: { id: `treina-mulher-${indice + 1}` } })} />
       </ScrollView>
     </SafeAreaView>
   );

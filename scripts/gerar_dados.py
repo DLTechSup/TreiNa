@@ -14,6 +14,18 @@ import sys
 from pathlib import Path
 
 APP = Path(__file__).resolve().parent.parent            # ...\TreiNa_App
+
+# O TreiNa é focado em ACADEMIA: só estes grupos entram no app (nome do grupo no app à direita).
+# Calistenia, Crossfit e Funcional/HIT ficam de fora.
+GRUPOS_APP = {
+    "Peitoral": "Peito", "Costas": "Costas", "Eretor Lombar": "Costas", "Ombros": "Ombros",
+    "Trapézio": "Trapézio", "Bíceps": "Bíceps", "Tríceps": "Tríceps", "Antebraços": "Antebraço",
+    "Pernas": "Pernas", "Glúteos": "Glúteos", "Panturrilhas": "Panturrilha",
+    "Cardio": "Cardio", "Mobilidade": "Mobilidade",
+}
+# Equipamentos que não são de academia
+FORA_DA_ACADEMIA = {"Elástico / faixa", "Toalha", "Gymstick", "TRX", "Bosu", "Bola suíça",
+                    "Bola medicinal", "Pneu", "Corda", "Argolas"}
 FASE1 = APP.parent / "TreiNa_Fase1"
 DADOS = APP / "src" / "data"
 
@@ -30,11 +42,13 @@ def main():
 
     exercicios = []
     for r in linhas:
+        if r["grupo_muscular"] not in GRUPOS_APP or r["equipamento"] in FORA_DA_ACADEMIA:
+            continue
         passos = [r[f"como_fazer_{i}"].strip() for i in range(1, 5) if r.get(f"como_fazer_{i}", "").strip()]
         exercicios.append({
             "id": r["id"],
             "nome": r["nome"],
-            "grupo": r["grupo_muscular"],
+            "grupo": GRUPOS_APP[r["grupo_muscular"]],
             "padrao": r["padrao_movimento"],
             "equipamento": r["equipamento"],
             "tipo": r["tipo"],
@@ -56,10 +70,13 @@ def main():
         dia["exercicios"].append({"id": r["exercicio_id"], "series": int(r["series"]),
                                   "repeticoes": r["repeticoes"], "descanso": int(r["descanso_s"])})
 
+    # Só ficam os planos cujos exercícios todos continuam no app (o plano de casa com elástico sai)
     ids = {e["id"] for e in exercicios}
-    faltando = [x["id"] for p in programas.values() for d in p["dias"] for x in d["exercicios"] if x["id"] not in ids]
-    if faltando:
-        sys.exit(f"Planos citam exercícios que não existem: {faltando}")
+    for nome in list(programas):
+        faltando = [x["id"] for d in programas[nome]["dias"] for x in d["exercicios"] if x["id"] not in ids]
+        if faltando:
+            print(f"Plano '{nome}' ficou de fora (usa exercícios fora da academia: {len(faltando)}).")
+            del programas[nome]
 
     DADOS.mkdir(parents=True, exist_ok=True)
     (DADOS / "exercicios.json").write_text(json.dumps(exercicios, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

@@ -1,0 +1,1185 @@
+[
+ {
+  "id": "hipertrofia-abc",
+  "nome": "Hipertrofia ABC",
+  "descricao": "Peito e tríceps, costas e bíceps, pernas e ombros. 3 treinos por semana para ganhar massa.",
+  "local": "Academia",
+  "objetivos": [
+   "Ganhar massa"
+  ],
+  "nivel": "Intermediário",
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "A · Peito e tríceps",
+    "itens": [
+     {
+      "id": "supino-reto",
+      "series": 4,
+      "repeticoes": "8-10",
+      "descanso": 90
+     },
+     {
+      "id": "supino-inclinado-com-halteres",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 75
+     },
+     {
+      "id": "crucifixo-com-halteres",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "voador-no-pec-deck",
+      "series": 3,
+      "repeticoes": "12-15",
+      "descanso": 60
+     },
+     {
+      "id": "triceps-pulley-corda",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "triceps-testa-com-barra",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Peito",
+     "Tríceps"
+    ]
+   },
+   {
+    "dia": 3,
+    "nome": "B · Costas e bíceps",
+    "itens": [
+     {
+      "id": "puxada-alta",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "remada-curvada-com-barra",
+      "series": 4,
+      "repeticoes": "8-10",
+      "descanso": 90
+     },
+     {
+      "id": "remada-sentada-com-cabo",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "face-pull",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "rosca-direta-com-barra",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 60
+     },
+     {
+      "id": "rosca-martelo",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Costas",
+     "Trapézio",
+     "Bíceps"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "C · Pernas e ombros",
+    "itens": [
+     {
+      "id": "agachamento-barra",
+      "series": 4,
+      "repeticoes": "8-10",
+      "descanso": 120
+     },
+     {
+      "id": "leg-press",
+      "series": 4,
+      "repeticoes": "12",
+      "descanso": 90
+     },
+     {
+      "id": "cadeira-extensora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "desenvolvimento-de-ombro-no-banco-com-halteres",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 75
+     },
+     {
+      "id": "elevacao-lateral-de-bracos-com-halteres",
+      "series": 3,
+      "repeticoes": "12-15",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-de-panturrilha-em-maquina-em-pe",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Ombros",
+     "Panturrilha"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "corpo-inteiro-iniciante",
+  "nome": "Corpo inteiro para iniciantes",
+  "descricao": "Dois treinos (A e B) que trabalham o corpo todo, alternados 3 vezes por semana. Ótimo para começar.",
+  "local": "Academia",
+  "objetivos": [
+   "Ganhar massa",
+   "Emagrecer",
+   "Condicionamento"
+  ],
+  "nivel": "Iniciante",
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "A · Corpo inteiro",
+    "itens": [
+     {
+      "id": "leg-press",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "supino-reto-na-maquina",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "desenvolvimento-de-ombro-na-maquina",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "contracao-abdominal",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Peito",
+     "Costas",
+     "Ombros",
+     "Mobilidade"
+    ]
+   },
+   {
+    "dia": 3,
+    "nome": "B · Corpo inteiro",
+    "itens": [
+     {
+      "id": "agachamento-goblet-com-haltere",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "supino-inclinado-com-halteres",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "remada-sentada-na-maquina",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "cadeira-extensora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "rosca-direta-com-barra",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 45
+     },
+     {
+      "id": "triceps-pulley-corda",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Peito",
+     "Costas",
+     "Bíceps",
+     "Tríceps"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "A · Corpo inteiro",
+    "itens": [
+     {
+      "id": "leg-press",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "supino-reto-na-maquina",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "desenvolvimento-de-ombro-na-maquina",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "contracao-abdominal",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Peito",
+     "Costas",
+     "Ombros",
+     "Mobilidade"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "superiores-inferiores",
+  "nome": "Superiores e inferiores (4x)",
+  "descricao": "Divisão clássica de academia: 2 treinos de parte de cima e 2 de pernas por semana. Bom para ganhar força e massa.",
+  "local": "Academia",
+  "objetivos": [
+   "Ganhar massa"
+  ],
+  "nivel": "Intermediário",
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "Superiores A",
+    "itens": [
+     {
+      "id": "supino-reto",
+      "series": 4,
+      "repeticoes": "8-10",
+      "descanso": 90
+     },
+     {
+      "id": "remada-curvada-com-barra",
+      "series": 4,
+      "repeticoes": "8-10",
+      "descanso": 90
+     },
+     {
+      "id": "desenvolvimento-militar-com-barra",
+      "series": 3,
+      "repeticoes": "8-10",
+      "descanso": 90
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 75
+     },
+     {
+      "id": "rosca-direta-com-barra",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 60
+     },
+     {
+      "id": "triceps-pulley-barra",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Peito",
+     "Costas",
+     "Ombros",
+     "Bíceps",
+     "Tríceps"
+    ]
+   },
+   {
+    "dia": 2,
+    "nome": "Inferiores A",
+    "itens": [
+     {
+      "id": "agachamento-barra",
+      "series": 4,
+      "repeticoes": "6-8",
+      "descanso": 120
+     },
+     {
+      "id": "levantamento-terra-romeno",
+      "series": 3,
+      "repeticoes": "8-10",
+      "descanso": 90
+     },
+     {
+      "id": "leg-press",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 90
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "elevacao-de-panturrilha-em-maquina-em-pe",
+      "series": 4,
+      "repeticoes": "12-15",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Costas",
+     "Panturrilha"
+    ]
+   },
+   {
+    "dia": 4,
+    "nome": "Superiores B",
+    "itens": [
+     {
+      "id": "supino-inclinado-com-halteres",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "puxada-alta-com-triangulo",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 75
+     },
+     {
+      "id": "desenvolvimento-arnold",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 75
+     },
+     {
+      "id": "remada-sentada-com-cabo",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "rosca-martelo",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "triceps-frances-com-halteres",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Peito",
+     "Costas",
+     "Ombros",
+     "Bíceps",
+     "Tríceps"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "Inferiores B",
+    "itens": [
+     {
+      "id": "agachamento-na-maquina-hack",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "elevacao-pelvica-com-barra",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "cadeira-extensora",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 60
+     },
+     {
+      "id": "cadeira-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "afundo-com-halteres",
+      "series": 3,
+      "repeticoes": "10 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "elevacao-de-panturrilha-sentado-com-alavanca",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Glúteos",
+     "Panturrilha"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "emagrecer-forca-cardio",
+  "nome": "Emagrecer: musculação + cardio",
+  "descricao": "Musculação com descanso curto e cardio no fim de cada treino. 4 dias por semana.",
+  "local": "Academia",
+  "objetivos": [
+   "Emagrecer"
+  ],
+  "nivel": "Iniciante",
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "Pernas + esteira",
+    "itens": [
+     {
+      "id": "agachamento-goblet-com-haltere",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "leg-press",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "afundo-com-halteres",
+      "series": 3,
+      "repeticoes": "12 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-pelvica-com-barra",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "esteira-com-inclinacao",
+      "series": 1,
+      "repeticoes": "20 min",
+      "descanso": 0
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Glúteos",
+     "Cardio"
+    ]
+   },
+   {
+    "dia": 2,
+    "nome": "Parte de cima + bike",
+    "itens": [
+     {
+      "id": "supino-com-halteres",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "desenvolvimento-de-ombro-na-maquina",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "remada-sentada-com-cabo",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "triceps-pulley-corda",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "bike",
+      "series": 1,
+      "repeticoes": "20 min",
+      "descanso": 0
+     }
+    ],
+    "grupos": [
+     "Peito",
+     "Costas",
+     "Ombros",
+     "Tríceps",
+     "Cardio"
+    ]
+   },
+   {
+    "dia": 4,
+    "nome": "Pernas e glúteo + esteira",
+    "itens": [
+     {
+      "id": "agachamento-no-smith",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "stiff-com-halter",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "cadeira-extensora",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "maquina-de-abducao-de-quadril",
+      "series": 3,
+      "repeticoes": "20",
+      "descanso": 30
+     },
+     {
+      "id": "elevacao-de-panturrilha-em-maquina-em-pe",
+      "series": 3,
+      "repeticoes": "20",
+      "descanso": 30
+     },
+     {
+      "id": "esteira-com-inclinacao",
+      "series": 1,
+      "repeticoes": "20 min",
+      "descanso": 0
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Glúteos",
+     "Panturrilha",
+     "Cardio"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "Parte de cima + tiros na bike",
+    "itens": [
+     {
+      "id": "supino-reto-na-maquina",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "remada-curvada-com-halteres",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-lateral-de-bracos-com-halteres",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "rosca-martelo",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "triceps-pulley-corda",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "airbike",
+      "series": 8,
+      "repeticoes": "30 s",
+      "descanso": 30
+     }
+    ],
+    "grupos": [
+     "Peito",
+     "Costas",
+     "Ombros",
+     "Bíceps",
+     "Tríceps",
+     "Cardio"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "condicionamento-academia",
+  "nome": "Condicionamento na academia",
+  "descricao": "Circuitos com máquinas e halteres, descanso curto e cardio. Para ganhar fôlego e resistência.",
+  "local": "Academia",
+  "objetivos": [
+   "Condicionamento",
+   "Emagrecer"
+  ],
+  "nivel": "Iniciante",
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "Circuito 1",
+    "itens": [
+     {
+      "id": "esteira-ergometrica",
+      "series": 1,
+      "repeticoes": "10 min",
+      "descanso": 60
+     },
+     {
+      "id": "agachamento-goblet-com-haltere",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "supino-com-halteres",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "remada-sentada-com-cabo",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "desenvolvimento-de-ombro-na-maquina",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "airbike",
+      "series": 6,
+      "repeticoes": "30 s",
+      "descanso": 30
+     }
+    ],
+    "grupos": [
+     "Cardio",
+     "Pernas",
+     "Peito",
+     "Costas",
+     "Ombros"
+    ]
+   },
+   {
+    "dia": 3,
+    "nome": "Circuito 2",
+    "itens": [
+     {
+      "id": "bike",
+      "series": 1,
+      "repeticoes": "10 min",
+      "descanso": 60
+     },
+     {
+      "id": "leg-press",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "supino-reto-na-maquina",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 30
+     },
+     {
+      "id": "maquina-de-remo",
+      "series": 4,
+      "repeticoes": "2 min",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Cardio",
+     "Pernas",
+     "Costas",
+     "Peito"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "Cardio longo",
+    "itens": [
+     {
+      "id": "esteira-com-inclinacao",
+      "series": 1,
+      "repeticoes": "30 min",
+      "descanso": 0
+     },
+     {
+      "id": "bike",
+      "series": 1,
+      "repeticoes": "15 min",
+      "descanso": 0
+     }
+    ],
+    "grupos": [
+     "Cardio"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mobilidade-diaria",
+  "nome": "Mobilidade e alongamento",
+  "descricao": "Sessões curtas (15 min) para soltar quadril, coluna e ombros. Boas para antes do treino ou nos dias de descanso.",
+  "local": "Academia",
+  "objetivos": [
+   "Mobilidade"
+  ],
+  "nivel": "Iniciante",
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "Quadril e pernas",
+    "itens": [
+     {
+      "id": "alongamento-de-quadril-90-90",
+      "series": 2,
+      "repeticoes": "40 s",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-dos-flexores-de-quadril-ajoelhado",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-de-isquiotibiais-em-pe",
+      "series": 2,
+      "repeticoes": "30 s",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-piriforme",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-borboleta",
+      "series": 2,
+      "repeticoes": "40 s",
+      "descanso": 15
+     }
+    ],
+    "grupos": [
+     "Mobilidade"
+    ]
+   },
+   {
+    "dia": 3,
+    "nome": "Coluna e ombros",
+    "itens": [
+     {
+      "id": "rotacao-da-coluna-toracica-de-joelhos",
+      "series": 2,
+      "repeticoes": "10 cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "circulos-com-os-bracos",
+      "series": 2,
+      "repeticoes": "30 s",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-do-peitoral-e-do-ombro-na-porta",
+      "series": 2,
+      "repeticoes": "30 s",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-de-ombro-com-o-braco-cruzado",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "rotacao-espinhal-deitado",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     }
+    ],
+    "grupos": [
+     "Mobilidade"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "Corpo inteiro",
+    "itens": [
+     {
+      "id": "alongamento-em-pe-dos-quadriceps",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-de-panturrilha-na-parede",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "postura-da-cobra-alongamento-abdominal",
+      "series": 2,
+      "repeticoes": "30 s",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-inclinado-lateral-em-pe",
+      "series": 2,
+      "repeticoes": "30 s cada lado",
+      "descanso": 15
+     },
+     {
+      "id": "alongamento-das-costas-com-rolo-de-espuma",
+      "series": 2,
+      "repeticoes": "40 s",
+      "descanso": 15
+     }
+    ],
+    "grupos": [
+     "Mobilidade"
+    ]
+   }
+  ]
+ },
+ {
+  "id": "treina-mulher-1",
+  "nome": "TreiNa Mulher: Glúteo, Pernas e Ombros",
+  "descricao": "Plano da área feminina: glúteo, pernas, posterior de coxa e ombros com volume. 4 dias na academia.",
+  "local": "Academia",
+  "objetivos": [
+   "Ganhar massa",
+   "Emagrecer"
+  ],
+  "nivel": "Intermediário",
+  "mulher": true,
+  "dias": [
+   {
+    "dia": 1,
+    "nome": "Glúteo e Posterior de Coxa",
+    "itens": [
+     {
+      "id": "elevacao-pelvica-com-barra",
+      "series": 4,
+      "repeticoes": "10-12",
+      "descanso": 90
+     },
+     {
+      "id": "levantamento-terra-romeno-com-halteres",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "agachamento-bulgaro-com-halteres",
+      "series": 3,
+      "repeticoes": "10 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "gluteo-coice-unilateral-na-polia-baixa",
+      "series": 3,
+      "repeticoes": "12-15 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "maquina-de-abducao-de-quadril",
+      "series": 3,
+      "repeticoes": "15-20",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Glúteos",
+     "Pernas"
+    ]
+   },
+   {
+    "dia": 2,
+    "nome": "Ombros com Volume",
+    "itens": [
+     {
+      "id": "desenvolvimento-de-ombro-no-banco-com-halteres",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "elevacao-lateral-de-bracos-com-halteres",
+      "series": 4,
+      "repeticoes": "12-15",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-lateral-unilateral-com-cabo",
+      "series": 3,
+      "repeticoes": "12-15 cada braço",
+      "descanso": 45
+     },
+     {
+      "id": "voador-invertido",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "face-pull",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Ombros",
+     "Trapézio",
+     "Costas"
+    ]
+   },
+   {
+    "dia": 4,
+    "nome": "Pernas (quadríceps) e Glúteo",
+    "itens": [
+     {
+      "id": "agachamento-no-smith",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "leg-press",
+      "series": 4,
+      "repeticoes": "12",
+      "descanso": 90
+     },
+     {
+      "id": "afundo-com-halteres",
+      "series": 3,
+      "repeticoes": "10 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "cadeira-extensora",
+      "series": 3,
+      "repeticoes": "12-15",
+      "descanso": 45
+     },
+     {
+      "id": "agachamento-sumo-com-halteres",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "elevacao-de-panturrilha-em-maquina-em-pe",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Panturrilha"
+    ]
+   },
+   {
+    "dia": 5,
+    "nome": "Glúteo e Ombros",
+    "itens": [
+     {
+      "id": "ponte-de-gluteos-com-barra",
+      "series": 4,
+      "repeticoes": "12",
+      "descanso": 90
+     },
+     {
+      "id": "stiff-com-halter",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "abducao-de-quadril-com-cabo",
+      "series": 3,
+      "repeticoes": "15 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "gluteo-coice-na-maquina",
+      "series": 3,
+      "repeticoes": "12 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-lateral-na-maquina",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "desenvolvimento-arnold",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 60
+     }
+    ],
+    "grupos": [
+     "Pernas",
+     "Glúteos",
+     "Ombros"
+    ]
+   }
+  ]
+ }
+]

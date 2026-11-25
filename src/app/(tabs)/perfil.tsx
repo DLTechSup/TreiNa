@@ -13,8 +13,7 @@ const OBJETIVOS = ['Emagrecer', 'Ganhar massa', 'Condicionamento', 'Mobilidade']
 const NIVEIS = ['Iniciante', 'Intermediário', 'Avançado'];
 const SEXOS = ['Feminino', 'Masculino', 'Prefiro não dizer'];
 const DIAS = [2, 3, 4, 5, 6];
-const TEMPOS = [30, 45, 60];
-const LOCAIS = ['Academia', 'Casa', 'Casa com halteres'];
+const TEMPOS = [30, 45, 60, 90];
 
 const numero = (t: string) => {
   const n = parseFloat(t.replace(',', '.'));
@@ -90,13 +89,7 @@ export default function TelaPerfil() {
           <Grupo rotulo="Nível">{NIVEIS.map((x) => <Chip key={x} texto={x} ativo={p.nivel === x} escuro onPress={() => alternar('nivel', x)} />)}</Grupo>
           <Grupo rotulo="Dias de treino por semana">{DIAS.map((x) => <Chip key={x} texto={String(x)} ativo={p.dias_semana === x} escuro onPress={() => alternar('dias_semana', x)} />)}</Grupo>
           <Grupo rotulo="Tempo por treino">{TEMPOS.map((x) => <Chip key={x} texto={`${x} min`} ativo={p.tempo_treino === x} escuro onPress={() => alternar('tempo_treino', x)} />)}</Grupo>
-          <Grupo rotulo="Onde você treina">{LOCAIS.map((x) => <Chip key={x} texto={x} ativo={p.local === x} onPress={() => alternar('local', x)} />)}</Grupo>
 
-          <Pressable onPress={() => router.push('/mulher')} style={({ pressed }) => [s.mulher, pressed && { opacity: 0.85 }]}>
-            <Icone nome="mulher" tamanho={22} cor={cores.roxoEscuro} />
-            <Text style={s.mulherTexto}>TreiNa Mulher: planos de glúteo, pernas e ombros</Text>
-            <Icone nome="seta" tamanho={18} cor={cores.roxoEscuro} />
-          </Pressable>
 
           <Botao texto={salvo ? 'Perfil salvo ✓' : 'Salvar perfil'} onPress={salvar} desativado={!p.nome.trim()} />
           {!p.nome.trim() && <Text style={[s.cinza, { textAlign: 'center', fontSize: 12 }]}>Preencha o nome para salvar.</Text>}

@@ -60,11 +60,13 @@ type BotaoProps = {
   tipo?: 'principal' | 'contorno' | 'lima';
   style?: StyleProp<ViewStyle>;
   desativado?: boolean;
+  /** Cor do texto (ex.: botão contorno em fundo escuro). */
+  corTexto?: string;
 };
 
-export function Botao({ texto, onPress, tipo = 'principal', style, desativado }: BotaoProps) {
+export function Botao({ texto, onPress, tipo = 'principal', style, desativado, corTexto }: BotaoProps) {
   const fundo = tipo === 'principal' ? cores.roxo : tipo === 'lima' ? cores.lima : 'transparent';
-  const cor = tipo === 'principal' ? cores.textoClaro : cores.texto;
+  const cor = corTexto ?? (tipo === 'principal' ? cores.textoClaro : cores.texto);
   return (
     <Pressable
       onPress={onPress}
@@ -120,7 +122,7 @@ export const LinhaExercicio = memo(function LinhaExercicio({ exercicio: e, favor
       <Image source={miniaturas[e.id]} style={estilos.linhaImg} contentFit="cover" transition={120} />
       <View style={{ flex: 1 }}>
         <Text style={estilos.linhaNome} numberOfLines={2}>{e.nome}</Text>
-        <Text style={estilos.linhaInfo} numberOfLines={1}>{detalhe ?? `${e.equipamento} · ${e.padrao}`}</Text>
+        <Text style={estilos.linhaInfo} numberOfLines={1}>{detalhe ?? `${e.grupo} · ${e.equipamento}`}</Text>
       </View>
       <Pressable onPress={() => onFavorito(e.id)} hitSlop={10} accessibilityRole="button"
         accessibilityLabel={favorito ? 'Remover dos favoritos' : 'Favoritar'} style={estilos.linhaEstrela}>

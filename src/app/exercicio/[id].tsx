@@ -1,15 +1,15 @@
-import { useEffect, useMemo } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { Icone } from '@/components/Icone';
-import { BotaoIcone, Miniatura, TopoVoltar } from '@/components/ui';
+import { Botao, BotaoIcone, Miniatura, TopoVoltar } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
-import { nomeMedida, porId, variacoes } from '@/data';
+import { porId, variacoes } from '@/data';
 import { videos } from '@/data/midia';
-import { useDados } from '@/db/banco';
+import { NOMES_DIAS, novoId, useDados } from '@/db/banco';
 
 export default function FichaExercicio() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -28,7 +28,21 @@ export default function FichaExercicio() {
 function Ficha({ id }: { id: string }) {
   const router = useRouter();
   const e = porId(id)!;
-  const { favoritos, alternarFavorito } = useDados();
+  const { favoritos, alternarFavorito, semana, salvarDia } = useDados();
+  const [escolherDia, setEscolherDia] = useState(false);
+  const [adicionado, setAdicionado] = useState<string | null>(null);
+  const adicionarNoDia = async (dia: number) => {
+    const d = semana[dia - 1];
+    const tempo = e.medida === 'tempo';
+    await salvarDia({
+      ...d,
+      nome: d.nome || e.grupo,
+      grupos: d.grupos.includes(e.grupo) ? d.grupos : [...d.grupos, e.grupo],
+      itens: [...d.itens, { id: novoId(), exercicio_id: e.id, series: 3, repeticoes: tempo ? '30 s' : '12', carga: null, descanso: 60 }],
+    });
+    setEscolherDia(false);
+    setAdicionado(NOMES_DIAS[dia]);
+  };
   const favorito = favoritos.has(e.id);
   const lista = useMemo(() => variacoes(e), [e]);
 
@@ -46,7 +60,7 @@ function Ficha({ id }: { id: string }) {
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
       <TopoVoltar
-        titulo={`${e.grupo} › ${e.padrao}`}
+        titulo={e.grupo}
         direita={
           <BotaoIcone rotulo={favorito ? 'Remover dos favoritos' : 'Favoritar'} onPress={() => alternarFavorito(e.id)}>
             <Icone nome="estrela" tamanho={20} cor={favorito ? cores.roxo : cores.texto} preenchido={favorito} />
@@ -61,15 +75,15 @@ function Ficha({ id }: { id: string }) {
 
         <View style={{ gap: 8 }}>
           <Text style={s.nome}>{e.nome}</Text>
-          <View style={s.tags}>
-            <Text style={[s.tag, s.tagRoxa]}>{e.grupo}</Text>
-            <Text style={s.tag}>{e.equipamento}</Text>
-            <Text style={s.tag}>{e.tipo} · {nomeMedida(e)}</Text>
-            {e.foco ? <Text style={[s.tag, s.tagLima]}>Foco feminino: {e.foco}</Text> : null}
+          <View style={s.ficha}>
+            <Info rotulo="Músculo trabalhado" valor={e.grupo} />
+            <Info rotulo="Aparelho / equipamento" valor={e.equipamento} />
+            <Info rotulo="Movimento" valor={e.padrao} />
+            {e.secundarios.length > 0 && <Info rotulo="Também trabalha" valor={e.secundarios.join(', ')} />}
+            {e.foco ? <Info rotulo="Foco feminino" valor={e.foco} /> : null}
           </View>
-          {e.secundarios.length > 0 && (
-            <Text style={s.texto}><Text style={s.negrito}>Também trabalha: </Text>{e.secundarios.join(', ')}</Text>
-          )}
+          <Botao texto={adicionado ? `Adicionado ao treino de ${adicionado.toLowerCase()} ✓` : '+ Adicionar ao meu treino'}
+            tipo={adicionado ? 'contorno' : 'principal'} onPress={() => setEscolherDia(true)} />
         </View>
 
         <View style={s.cartao}>
@@ -93,24 +107,63 @@ function Ficha({ id }: { id: string }) {
             <Text style={s.subtitulo}>
               Variações deste exercício <Text style={s.cinza}>· {lista.length}</Text>
             </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-              {lista.slice(0, 20).map((v) => (
+            <View style={s.gradeVar}>
+              {lista.slice(0, 6).map((v) => (
                 <Pressable key={v.id} style={({ pressed }) => [s.variacao, pressed && { opacity: 0.7 }]}
                   onPress={() => router.push({ pathname: '/exercicio/[id]', params: { id: v.id } })}>
-                  <Miniatura id={v.id} tamanho={112} raioBorda={12} />
+                  <Miniatura id={v.id} tamanho={96} raioBorda={12} />
                   <Text style={s.variacaoNome} numberOfLines={2}>{v.nome}</Text>
                   <Text style={s.variacaoInfo} numberOfLines={1}>{v.equipamento}</Text>
                 </Pressable>
               ))}
-            </ScrollView>
+            </View>
+            {lista.length > 6 && (
+              <Text style={s.verTodas} onPress={() => router.navigate({ pathname: '/biblioteca', params: { grupo: e.grupo } })}>
+                Ver todos os exercícios de {e.grupo}
+              </Text>
+            )}
           </View>
         )}
       </ScrollView>
+
+      <Modal visible={escolherDia} transparent animationType="slide" onRequestClose={() => setEscolherDia(false)}>
+        <Pressable style={s.modalFundo} onPress={() => setEscolherDia(false)}>
+          <Pressable style={s.modalPainel} onPress={() => {}}>
+            <Text style={s.subtitulo}>Em qual dia?</Text>
+            <Text style={s.cinza}>Entra com 3 séries de 12 e 60 s de descanso. Depois você ajusta no dia.</Text>
+            {semana.map((d) => (
+              <Pressable key={d.dia} onPress={() => adicionarNoDia(d.dia)} style={({ pressed }) => [s.diaLinha, pressed && { backgroundColor: cores.lilas }]}>
+                <Text style={s.diaNome}>{NOMES_DIAS[d.dia]}</Text>
+                <Text style={s.cinza} numberOfLines={1}>{d.itens.length ? `${d.nome} · ${d.itens.length} exerc.` : 'descanso'}</Text>
+              </Pressable>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
 
+function Info({ rotulo, valor }: { rotulo: string; valor: string }) {
+  return (
+    <View style={s.info}>
+      <Text style={s.infoRotulo}>{rotulo}</Text>
+      <Text style={s.infoValor}>{valor}</Text>
+    </View>
+  );
+}
+
 const s = StyleSheet.create({
+  ficha: { backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, borderRadius: 16, paddingHorizontal: 14 },
+  info: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: cores.borda },
+  infoRotulo: { fontFamily: fontes.regular, fontSize: 13, color: cores.texto2 },
+  infoValor: { flex: 1, textAlign: 'right', fontFamily: fontes.semi, fontSize: 13, color: cores.texto },
+  gradeVar: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  verTodas: { fontFamily: fontes.semi, fontSize: 13, color: cores.roxo, paddingVertical: 4 },
+  modalFundo: { flex: 1, backgroundColor: 'rgba(22,22,29,0.5)', justifyContent: 'flex-end', alignItems: 'center' },
+  modalPainel: { width: '100%', maxWidth: 560, backgroundColor: cores.cartao, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 28, gap: 6 },
+  diaLinha: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 8, borderRadius: 10 },
+  diaNome: { fontFamily: fontes.semi, fontSize: 15, color: cores.texto },
   conteudo: { paddingHorizontal: 20, paddingBottom: 32, gap: 16 },
   video: {
     backgroundColor: '#FFFFFF', borderRadius: raio.g, borderWidth: 1, borderColor: cores.borda,
