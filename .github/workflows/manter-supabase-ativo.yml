@@ -16,13 +16,18 @@ jobs:
   cutucar:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+
       - name: Cutucar o banco do Supabase
         env:
           URL: ${{ vars.SUPABASE_URL }}
           CHAVE: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
-          if [ -z "$URL" ] || [ -z "$CHAVE" ]; then
-            echo "::warning::Cadastre as variáveis SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY no repositório."
+          # Sem as Variables do repositório, usa os valores do arquivo .env
+          [ -z "$URL" ] && URL=$(grep -E '^EXPO_PUBLIC_SUPABASE_URL=' .env | cut -d= -f2- | tr -d '\r ')
+          [ -z "$CHAVE" ] && CHAVE=$(grep -E '^EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=' .env | cut -d= -f2- | tr -d '\r ')
+          if [ -z "$URL" ] || [ -z "$CHAVE" ] || echo "$URL$CHAVE" | grep -qi 'COLE'; then
+            echo "::warning::Supabase não configurado (preencha o .env ou as Variables do repositório)."
             exit 0
           fi
           for tentativa in 1 2 3 4 5; do
@@ -37,8 +42,6 @@ jobs:
           done
           echo "::error::Não consegui falar com o Supabase. Se o projeto estiver pausado, entre no painel do Supabase e clique em Resume project."
           exit 1
-
-      - uses: actions/checkout@v6
 
       - name: Manter o repositório ativo (evita o GitHub desligar este robô)
         run: |

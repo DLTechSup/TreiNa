@@ -30,16 +30,18 @@ jobs:
       - name: Instalar dependências
         run: npm ci --no-audit --no-fund
 
-      - name: Dados do Supabase (Settings > Secrets and variables > Actions > Variables)
+      - name: Dados do Supabase (arquivo .env, ou as Variables do repositório se existirem)
         env:
           URL: ${{ vars.SUPABASE_URL }}
           CHAVE: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           if [ -n "$URL" ] && [ -n "$CHAVE" ]; then
             printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$URL" "$CHAVE" > .env
-            echo "Supabase configurado."
+            echo "Supabase: usando as Variables do repositório."
+          elif grep -qi 'COLE' .env; then
+            echo "::warning::Supabase não configurado no .env: o site vai funcionar, mas sem login e sem backup na nuvem."
           else
-            echo "::warning::Variáveis SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY não cadastradas: o site vai funcionar, mas sem login e sem backup na nuvem."
+            echo "Supabase: usando os dados do arquivo .env."
           fi
 
       - name: Gerar o site
