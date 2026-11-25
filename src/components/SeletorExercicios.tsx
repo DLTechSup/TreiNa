@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ListViewToken } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { Icone } from './Icone';
 import { FaixaRolavel } from './pecas';
 import { Botao, Chip } from './ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { filtrar, grupos, type Exercicio } from '@/data';
-import { miniaturas } from '@/data/midia';
+import { miniaturas, videos } from '@/data/midia';
 
 type Props = {
   visivel: boolean;
@@ -49,6 +50,16 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
     () => [...gruposDoDia, ...grupos.map((g) => g.nome).filter((g) => !gruposDoDia.includes(g))],
     [gruposDoDia],
   );
+
+  // Cartões em 2 colunas, com o vídeo grande se movendo
+  const tela = useWindowDimensions();
+  const largCartao = Math.floor((Math.min(tela.width, 560) - 32 - 10) / 2);
+  // Só os cartões que estão aparecendo na tela tocam o vídeo (os outros mostram a imagem parada): fica leve no celular
+  const [naTela, setNaTela] = useState<Set<string>>(new Set());
+  const aoMudarNaTela = useRef(({ viewableItems }: { viewableItems: ListViewToken[] }) => {
+    setNaTela(new Set(viewableItems.map((v) => (v.item as Exercicio).id)));
+  }).current;
+  const configNaTela = useRef({ itemVisiblePercentThreshold: 15 }).current;
 
   const alternar = (id: string) =>
     setMarcados((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]));
@@ -93,10 +104,15 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
           <FlatList
             data={lista}
             keyExtractor={(e) => e.id}
-            initialNumToRender={14}
-            windowSize={7}
+            numColumns={2}
+            columnWrapperStyle={s.colunas}
+            initialNumToRender={6}
+            maxToRenderPerBatch={4}
+            windowSize={5}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 100 }}
+            contentContainerStyle={{ paddingBottom: 110, gap: 10 }}
+            onViewableItemsChanged={aoMudarNaTela}
+            viewabilityConfig={configNaTela}
             ListHeaderComponent={
               <Text style={s.contagem}>
                 {busca.trim()
@@ -106,7 +122,7 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
             }
             ListEmptyComponent={<Text style={s.vazio}>Nenhum exercício com esses filtros.</Text>}
             renderItem={({ item }) => (
-              <Linha e={item} marcado={marcados.includes(item.id)} jaNoDia={jaNoDia.has(item.id)} onPress={() => alternar(item.id)} />
+              <Cartao e={item} largura={largCartao} mexendo={naTela.has(item.id)} marcado={marcados.includes(item.id)} jaNoDia={jaNoDia.has(item.id)} onPress={() => alternar(item.id)} />
             )}
           />
 
@@ -124,19 +140,37 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
   );
 }
 
-function Linha({ e, marcado, jaNoDia, onPress }: { e: Exercicio; marcado: boolean; jaNoDia: boolean; onPress: () => void }) {
+/** Cartão do exercício: vídeo grande se movendo (para ver o movimento), nome e a bolinha para marcar. */
+function Cartao({ e, largura, mexendo, marcado, jaNoDia, onPress }: {
+  e: Exercicio; largura: number; mexendo: boolean; marcado: boolean; jaNoDia: boolean; onPress: () => void;
+}) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [s.linha, marcado && { backgroundColor: cores.lilas }, pressed && { opacity: 0.8 }]}
+    <Pressable onPress={onPress} style={({ pressed }) => [s.cartao, { width: largura }, marcado && s.cartaoMarcado, pressed && { opacity: 0.85 }]}
       accessibilityRole="checkbox" accessibilityState={{ checked: marcado }} accessibilityLabel={e.nome}>
-      <Image source={miniaturas[e.id]} style={s.img} contentFit="cover" />
-      <View style={{ flex: 1 }}>
-        <Text style={s.nome} numberOfLines={2}>{e.nome}</Text>
-        <Text style={s.info} numberOfLines={1}>{e.grupo} · {e.equipamento}{jaNoDia ? ' · já está no dia' : ''}</Text>
+      <View style={[s.midia, { height: largura - 4 }]} pointerEvents="none">
+        {/* A imagem fica por baixo: aparece enquanto o vídeo carrega (ou se o celular estiver em economia de bateria) */}
+        <Image source={miniaturas[e.id]} style={StyleSheet.absoluteFill} contentFit="contain" />
+        {mexendo && <VideoMovimento id={e.id} />}
+        {jaNoDia && <Text style={s.selo}>Já no dia</Text>}
       </View>
-      <View style={[s.check, marcado && s.checkAtivo]}>
-        {marcado && <Icone nome="check" tamanho={16} cor={cores.textoClaro} espessura={3} />}
+      <View style={[s.check, marcado && s.checkAtivo]} pointerEvents="none">
+        {marcado && <Icone nome="check" tamanho={18} cor={cores.textoClaro} espessura={3} />}
+      </View>
+      <View style={s.textos}>
+        <Text style={s.nome} numberOfLines={3}>{e.nome}</Text>
+        <Text style={s.info} numberOfLines={1}>{e.grupo} · {e.equipamento}</Text>
       </View>
     </Pressable>
+  );
+}
+
+function VideoMovimento({ id }: { id: string }) {
+  const player = useVideoPlayer(videos[id], (p) => { p.loop = true; p.muted = true; p.play(); });
+  useEffect(() => { if (Platform.OS === 'web') player.play(); }, [player]);
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <VideoView player={player} style={{ width: '100%', height: '100%' }} contentFit="contain" nativeControls={false} playsInline />
+    </View>
   );
 }
 
@@ -149,12 +183,16 @@ const s = StyleSheet.create({
   buscaInput: { flex: 1, minWidth: 0, fontFamily: fontes.media, fontSize: 16, color: cores.texto, height: 40 },
   filtros: { gap: 6, paddingTop: 8, paddingBottom: 8, borderBottomWidth: 1, borderColor: cores.borda },
   contagem: { fontFamily: fontes.media, fontSize: 12, color: cores.texto2, paddingHorizontal: 16, paddingVertical: 8 },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: cores.cartao, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: cores.borda },
-  img: { width: 56, height: 56, borderRadius: 10, backgroundColor: cores.cinza },
-  nome: { fontFamily: fontes.semi, fontSize: 14, color: cores.texto, lineHeight: 18 },
-  info: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2, marginTop: 2 },
-  check: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: cores.borda, alignItems: 'center', justifyContent: 'center' },
+  colunas: { gap: 10, paddingHorizontal: 16 },
+  cartao: { backgroundColor: cores.cartao, borderRadius: 16, borderWidth: 2, borderColor: cores.borda, overflow: 'hidden' },
+  cartaoMarcado: { borderColor: cores.roxo, backgroundColor: cores.lilas },
+  midia: { width: '100%', backgroundColor: '#FFFFFF' },
+  selo: { position: 'absolute', left: 8, bottom: 8, backgroundColor: cores.escuro, color: cores.lima, fontFamily: fontes.semi, fontSize: 11, paddingHorizontal: 8, paddingVertical: 3, borderRadius: raio.pill, overflow: 'hidden' },
+  check: { position: 'absolute', top: 8, right: 8, width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: cores.borda, backgroundColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center' },
   checkAtivo: { backgroundColor: cores.roxo, borderColor: cores.roxo },
+  textos: { paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10, gap: 2 },
+  nome: { fontFamily: fontes.semi, fontSize: 15, color: cores.texto, lineHeight: 19 },
+  info: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2 },
   vazio: { textAlign: 'center', padding: 32, fontFamily: fontes.regular, color: cores.texto2 },
   rodape: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 16, backgroundColor: 'rgba(245,244,240,0.96)', borderTopWidth: 1, borderColor: cores.borda },
 });
