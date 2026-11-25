@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
+import { BackHandler, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -13,9 +13,9 @@ import { porId } from '@/data';
 import { videos } from '@/data/midia';
 import { repsAlvo, segundosAlvo } from '@/data/planos';
 import { NOMES_DIAS, gravarMeta, lerMeta, useDados, type ItemPlano, type SerieFeita } from '@/db/banco';
-import { maioresCargas, ultimaCarga } from '@/db/historico';
+import { maioresCargas, ultimaCarga, ultimaNota } from '@/db/historico';
 import { useSQLiteContext } from '@/db/sqlite';
-import { chaveDia, descanso as txtDescanso, duracao, kg, relogio } from '@/lib/datas';
+import { chaveDia, dataCurta, descanso as txtDescanso, duracao, kg, relogio } from '@/lib/datas';
 import { prepararSons, tocar, vibrar } from '@/lib/som';
 
 /*
@@ -33,7 +33,7 @@ export default function Executar() {
   const db = useSQLiteContext();
   const { dia: param } = useLocalSearchParams<{ dia: string }>();
   const dia = Math.min(7, Math.max(1, Number(param) || 1));
-  const { semana, registrarSessao } = useDados();
+  const { semana, registrarSessao, salvarObservacao } = useDados();
 
   // O treino do dia fica "congelado" ao abrir a tela
   const [itens] = useState<ItemPlano[]>(() => semana[dia - 1]?.itens ?? []);
@@ -48,6 +48,10 @@ export default function Executar() {
   const [reps, setReps] = useState<(number | null)[]>(() => itens.map((i) => repsAlvo(i.repeticoes)));
   const [cargas, setCargas] = useState<(number | null)[]>(() => itens.map((i) => i.carga));
   const [feitas, setFeitas] = useState<SerieFeita[]>([]);
+  // Observação de cada exercício (começa com a que está no plano)
+  const [notasIniciais] = useState<string[]>(() => itens.map((i) => i.observacao ?? ''));
+  const [notas, setNotas] = useState<string[]>(() => itens.map((i) => i.observacao ?? ''));
+  const [notasAnteriores, setNotasAnteriores] = useState<({ texto: string; data: string } | null)[]>([]);
   const [usarDescanso, setUsarDescanso] = useState(false);
   const [descanso, setDescanso] = useState<{ ate: number; total: number } | null>(null);
   const [aviso, setAviso] = useState<number>(0); // fim do "volta em 10 s"
@@ -69,6 +73,7 @@ export default function Executar() {
       setUsarDescanso((await lerMeta(db, 'usar_descanso')) === '1');
       setCargas(await Promise.all(itens.map(async (i) => i.carga ?? (await ultimaCarga(db, i.exercicio_id))?.carga ?? null)));
       setRecordesAntes(await maioresCargas(db, [...new Set(itens.map((i) => i.exercicio_id))]));
+      setNotasAnteriores(await Promise.all(itens.map((i) => ultimaNota(db, i.exercicio_id))));
     })();
   }, [db, itens]);
 
@@ -145,8 +150,19 @@ export default function Executar() {
     if (comecou && inicioEx) setTempos((t) => ({ ...t, [ex]: (t[ex] ?? 0) + Math.round((Date.now() - inicioEx) / 1000) }));
   };
 
+  const guardarNota = (i: number) => {
+    const it = itens[i];
+    if (it && (notas[i] ?? '').trim() !== (it.observacao ?? '').trim()) salvarObservacao(it.id, notas[i] ?? '').catch(() => {});
+  };
+  // Observações que mudaram neste treino (vão para o histórico do dia)
+  const notasDoTreino = () => itens
+    .map((it, i) => ({ exercicio_id: it.exercicio_id, ordem: i, texto: (notas[i] ?? '').trim(), mudou: (notas[i] ?? '').trim() !== (notasIniciais[i] ?? '').trim() }))
+    .filter((n) => n.mudou && n.texto)
+    .map(({ exercicio_id, ordem, texto }) => ({ exercicio_id, ordem, texto }));
+
   const terminar = async (todas: SerieFeita[]) => {
     guardarTempoExercicio();
+    guardarNota(ex);
     setFase('fim');
     setDescanso(null); setAviso(0); setCronometro(0);
     if (!todas.length) { setSalvo({ duracao: 0 }); return; }
@@ -155,6 +171,7 @@ export default function Executar() {
     await registrarSessao({
       data: chaveDia(new Date(inicio || fim)), dia_semana: dia, nome: nomeTreino,
       iniciado_em: new Date(inicio || fim).toISOString(), concluido_em: new Date(fim).toISOString(), duracao_s: dur, series: todas,
+      notas: notasDoTreino(),
     });
     tocar('fim');
     setSalvo({ duracao: dur });
@@ -162,6 +179,7 @@ export default function Executar() {
 
   const irParaExercicio = (i: number, todas: SerieFeita[]) => {
     guardarTempoExercicio();
+    guardarNota(ex);
     setDescanso(null); setAviso(0); setCronometro(0);
     setEx(i);
     setSerie(Math.min(itens[i].series, todas.filter((f) => f.ordem === i).length + 1));
@@ -243,6 +261,7 @@ export default function Executar() {
                 <View style={{ flex: 1 }}>
                   <Text style={s.linhaNome} numberOfLines={1}>{i + 1}. {porId(it.exercicio_id)?.nome}</Text>
                   <Text style={s.linhaInfo}>{it.series} × {it.repeticoes}{cargas[i] != null ? ` · ${kg(cargas[i])}` : ''} · descanso {txtDescanso(it.descanso)}</Text>
+                  {it.observacao ? <Text style={s.linhaNota} numberOfLines={2}>📝 {it.observacao}</Text> : null}
                 </View>
               </View>
             ))}
@@ -356,6 +375,18 @@ export default function Executar() {
               </>
             )}
 
+            {/* Observação: para anotar a progressão de carga (fica salva no exercício e no histórico) */}
+            <View style={s.notaCaixa}>
+              <Text style={s.notaRotulo}>📝 Observação</Text>
+              <TextInput value={notas[ex] ?? ''} onChangeText={(t) => setNotas((l) => l.map((x, i) => (i === ex ? t : x)))}
+                onBlur={() => guardarNota(ex)} multiline maxLength={300} style={s.notaInput}
+                placeholder="Ex.: 10 kg fácil, subir para 12 kg na próxima" placeholderTextColor={cores.textoClaro2}
+                accessibilityLabel="Observação do exercício" />
+              {notasAnteriores[ex] && notasAnteriores[ex]!.texto.trim() !== (notas[ex] ?? '').trim() ? (
+                <Text style={s.notaAntes}>Na última vez ({dataCurta(notasAnteriores[ex]!.data)}): {notasAnteriores[ex]!.texto}</Text>
+              ) : null}
+            </View>
+
             {ex + 1 < itens.length && <Text style={s.aSeguir}>A seguir: {porId(itens[ex + 1].exercicio_id)?.nome}</Text>}
             {chaveDescanso}
           </ScrollView>
@@ -406,7 +437,7 @@ export default function Executar() {
         texto={feitas.length ? `As ${feitas.length} séries feitas serão salvas no histórico.` : 'Nenhuma série foi feita ainda, então nada será salvo.'}
         confirmar={feitas.length ? 'Encerrar e salvar' : 'Sair do treino'} cancelar="Continuar treinando"
         onCancelar={() => setEncerrar(false)}
-        onConfirmar={() => { setEncerrar(false); if (feitas.length) terminar(feitas); else sair(); }} />
+        onConfirmar={() => { setEncerrar(false); if (feitas.length) terminar(feitas); else { guardarNota(ex); sair(); } }} />
     </SafeAreaView>
   );
 }
@@ -496,6 +527,11 @@ const s = StyleSheet.create({
   linhaLista: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 6 },
   linhaNome: { fontFamily: fontes.semi, fontSize: 14, color: cores.textoClaro },
   linhaInfo: { flex: 1, fontFamily: fontes.regular, fontSize: 12, color: cores.textoClaro2, marginTop: 2 },
+  notaCaixa: { backgroundColor: cores.escuro2, borderRadius: raio.m, padding: 12, gap: 6 },
+  notaRotulo: { fontFamily: fontes.semi, fontSize: 13, color: cores.lima },
+  notaInput: { minHeight: 44, borderRadius: 10, backgroundColor: cores.escuro, borderWidth: 1, borderColor: cores.escuro3, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fontes.media, fontSize: 16, color: cores.textoClaro, textAlignVertical: 'top' },
+  notaAntes: { fontFamily: fontes.regular, fontSize: 12, color: cores.textoClaro2, lineHeight: 17 },
+  linhaNota: { fontFamily: fontes.media, fontSize: 12, color: cores.lima, marginTop: 3, lineHeight: 16 },
   chave: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: cores.escuro2, borderRadius: raio.m, padding: 14 },
   chaveTitulo: { fontFamily: fontes.semi, fontSize: 14, color: cores.textoClaro },
   chaveTexto: { fontFamily: fontes.regular, fontSize: 12, color: cores.textoClaro2, marginTop: 2, lineHeight: 17 },

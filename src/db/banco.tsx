@@ -5,10 +5,10 @@ import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from './sqlite'
 /* Banco local (fica no celular / navegador)                           */
 /* ------------------------------------------------------------------ */
 
-const VERSAO = 3;
+const VERSAO = 4;
 
 /** Tabelas que vão para o backup na nuvem. */
-export const TABELAS_BACKUP = ['perfil', 'favoritos', 'plano_dias', 'plano_itens', 'sessoes', 'sessao_series'] as const;
+export const TABELAS_BACKUP = ['perfil', 'favoritos', 'plano_dias', 'plano_itens', 'sessoes', 'sessao_series', 'sessao_notas'] as const;
 
 async function migrar(db: SQLiteDatabase) {
   const linha = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
@@ -65,6 +65,20 @@ async function migrar(db: SQLiteDatabase) {
       CREATE INDEX IF NOT EXISTS sessao_series_exercicio ON sessao_series (exercicio_id);
     `);
     versao = 3;
+  }
+  if (versao === 3) {
+    // Observações: uma fixa em cada exercício do plano e as anotadas em cada treino (progressão de carga)
+    const cols = await db.getAllAsync<{ name: string }>('PRAGMA table_info(plano_itens)');
+    if (!cols.some((c) => c.name === 'observacao')) await db.execAsync('ALTER TABLE plano_itens ADD COLUMN observacao TEXT');
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS sessao_notas (
+        id TEXT PRIMARY KEY NOT NULL, sessao_id TEXT NOT NULL, exercicio_id TEXT NOT NULL,
+        ordem INTEGER NOT NULL, texto TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS sessao_notas_sessao ON sessao_notas (sessao_id);
+      CREATE INDEX IF NOT EXISTS sessao_notas_exercicio ON sessao_notas (exercicio_id);
+    `);
+    versao = 4;
   }
   await db.execAsync(`PRAGMA user_version = ${versao}`);
 }
@@ -134,6 +148,8 @@ export type ItemPlano = {
   repeticoes: string;
   carga: number | null;
   descanso: number;
+  /** Anotação da pessoa (ex.: "subir para 12 kg na próxima"). */
+  observacao?: string | null;
 };
 
 export type DiaPlano = { dia: number; nome: string; grupos: string[]; itens: ItemPlano[] };
@@ -149,6 +165,8 @@ export type SessaoNova = {
   concluido_em: string;
   duracao_s: number;
   series: SerieFeita[];
+  /** Observações escritas no treino. `item_id` = exercício do plano, que guarda a última observação para a próxima vez. */
+  notas?: { exercicio_id: string; ordem: number; texto: string; item_id?: string }[];
 };
 
 export const NOMES_DIAS = ['', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -174,6 +192,8 @@ type Dados = {
   /** Troca a semana inteira (aceitar um plano sugerido). Dias que não vierem ficam de descanso. */
   aplicarSemana: (dias: DiaPlano[]) => Promise<void>;
   registrarSessao: (s: SessaoNova) => Promise<string>;
+  /** Guarda a observação de um exercício do plano (aparece no próximo treino). */
+  salvarObservacao: (itemId: string, texto: string) => Promise<void>;
   apagarSessao: (id: string) => Promise<void>;
   /** Sobe a cada treino salvo/apagado: as telas do histórico usam para recarregar. */
   versaoHistorico: number;
@@ -193,12 +213,12 @@ async function lerSemana(db: SQLiteDatabase): Promise<DiaPlano[]> {
     try { alvo.grupos = d.grupos ? JSON.parse(d.grupos) : []; } catch { alvo.grupos = []; }
   }
   const itens = await db.getAllAsync<ItemPlano & { dia: number }>(
-    'SELECT id, dia, exercicio_id, series, repeticoes, carga, descanso FROM plano_itens ORDER BY dia, ordem',
+    'SELECT id, dia, exercicio_id, series, repeticoes, carga, descanso, observacao FROM plano_itens ORDER BY dia, ordem',
   );
   for (const it of itens) {
     semana[it.dia - 1]?.itens.push({
       id: it.id, exercicio_id: it.exercicio_id, series: it.series, repeticoes: String(it.repeticoes),
-      carga: it.carga, descanso: it.descanso,
+      carga: it.carga, descanso: it.descanso, observacao: it.observacao ?? null,
     });
   }
   return semana;
@@ -217,8 +237,8 @@ async function gravarDia(db: SQLiteDatabase, d: DiaPlano) {
   let ordem = 0;
   for (const it of d.itens) {
     await db.runAsync(
-      'INSERT OR REPLACE INTO plano_itens (id, dia, ordem, exercicio_id, series, repeticoes, carga, descanso) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      it.id || novoId(), d.dia, ordem++, it.exercicio_id, it.series, it.repeticoes, it.carga, it.descanso,
+      'INSERT OR REPLACE INTO plano_itens (id, dia, ordem, exercicio_id, series, repeticoes, carga, descanso, observacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      it.id || novoId(), d.dia, ordem++, it.exercicio_id, it.series, it.repeticoes, it.carga, it.descanso, it.observacao?.trim() || null,
     );
   }
 }
@@ -314,10 +334,28 @@ function DadosProvider({ children }: { children: ReactNode }) {
             novoId(), id, se.exercicio_id, se.ordem, se.serie, se.repeticoes, se.carga, se.feito_em,
           );
         }
+        for (const n of s.notas ?? []) {
+          const texto = n.texto.trim();
+          if (texto) {
+            await db.runAsync('INSERT INTO sessao_notas (id, sessao_id, exercicio_id, ordem, texto) VALUES (?, ?, ?, ?, ?)', novoId(), id, n.exercicio_id, n.ordem, texto);
+          }
+          // A observação fica no exercício do plano para aparecer no próximo treino
+          if (n.item_id) await db.runAsync('UPDATE plano_itens SET observacao = ? WHERE id = ?', texto || null, n.item_id);
+        }
       });
+      if (s.notas?.some((n) => n.item_id)) setSemana(await lerSemana(db));
       setVersaoHistorico((v) => v + 1);
       await registrarAlteracao(db);
       return id;
+    },
+    [db],
+  );
+
+  const salvarObservacao = useCallback(
+    async (itemId: string, texto: string) => {
+      await db.runAsync('UPDATE plano_itens SET observacao = ? WHERE id = ?', texto.trim() || null, itemId);
+      setSemana(await lerSemana(db));
+      await registrarAlteracao(db);
     },
     [db],
   );
@@ -326,6 +364,7 @@ function DadosProvider({ children }: { children: ReactNode }) {
     async (id: string) => {
       await db.withTransactionAsync(async () => {
         await db.runAsync('DELETE FROM sessao_series WHERE sessao_id = ?', id);
+        await db.runAsync('DELETE FROM sessao_notas WHERE sessao_id = ?', id);
         await db.runAsync('DELETE FROM sessoes WHERE id = ?', id);
       });
       setVersaoHistorico((v) => v + 1);
@@ -337,10 +376,10 @@ function DadosProvider({ children }: { children: ReactNode }) {
   const valor = useMemo(
     () => ({
       pronto, perfil, salvarPerfil, favoritos, alternarFavorito, semana, salvarDia, aplicarSemana,
-      registrarSessao, apagarSessao, versaoHistorico, recarregar,
+      registrarSessao, salvarObservacao, apagarSessao, versaoHistorico, recarregar,
     }),
     [pronto, perfil, salvarPerfil, favoritos, alternarFavorito, semana, salvarDia, aplicarSemana,
-      registrarSessao, apagarSessao, versaoHistorico, recarregar],
+      registrarSessao, salvarObservacao, apagarSessao, versaoHistorico, recarregar],
   );
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }

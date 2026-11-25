@@ -59,6 +59,7 @@ export default function EvolucaoExercicio() {
             <View style={{ flex: 1 }}>
               <Text style={s.linhaData}>{dataLonga(p.data)}</Text>
               <Text style={s.cinzaPeq}>{p.series} séries{p.volume ? ` · volume ${kg(p.volume)}` : ''}</Text>
+              {p.nota ? <Text style={s.nota}>📝 {p.nota}</Text> : null}
             </View>
             <Text style={s.linhaValor}>
               {p.maior_carga != null ? `${kg(p.maior_carga)} × ${p.reps_na_maior ?? '—'}` : `${p.maior_reps ?? '—'} ${e?.medida === 'tempo' ? 's' : 'reps'}`}
@@ -124,6 +125,7 @@ const s = StyleSheet.create({
   recValor: { fontFamily: fontes.titulo, fontSize: 20, color: cores.texto, marginTop: 2 },
   grafico: { backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, borderRadius: raio.g, padding: 12, gap: 6 },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, borderRadius: raio.m, padding: 12 },
+  nota: { fontFamily: fontes.media, fontSize: 13, color: cores.roxoEscuro, marginTop: 6, lineHeight: 18 },
   linhaData: { fontFamily: fontes.semi, fontSize: 13, color: cores.texto },
   linhaValor: { fontFamily: fontes.titulo, fontSize: 15, color: cores.roxo },
 });

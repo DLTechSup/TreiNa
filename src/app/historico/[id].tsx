@@ -18,7 +18,7 @@ export default function DetalheSessao() {
   const db = useSQLiteContext();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { apagarSessao } = useDados();
-  const [sessao, setSessao] = useState<(ResumoSessao & { registros: SerieRegistro[] }) | null | undefined>(undefined);
+  const [sessao, setSessao] = useState<(ResumoSessao & { registros: SerieRegistro[]; notas: { exercicio_id: string; ordem: number; texto: string }[] }) | null | undefined>(undefined);
   const [apagar, setApagar] = useState(false);
 
   useEffect(() => { detalheSessao(db, id).then(setSessao); }, [db, id]);
@@ -27,12 +27,18 @@ export default function DetalheSessao() {
   if (!sessao) return <SafeAreaView style={{ flex: 1 }}><TopoVoltar titulo="Treino" /><Text style={s.cinza}>Treino não encontrado.</Text></SafeAreaView>;
 
   // Agrupa as séries por exercício (na ordem do treino)
-  const grupos: { exercicio_id: string; series: SerieRegistro[] }[] = [];
+  const grupos: { exercicio_id: string; ordem: number; series: SerieRegistro[]; nota?: string }[] = [];
   sessao.registros.forEach((se) => {
     const ultimo = grupos[grupos.length - 1];
     if (ultimo && ultimo.exercicio_id === se.exercicio_id) ultimo.series.push(se);
-    else grupos.push({ exercicio_id: se.exercicio_id, series: [se] });
+    else grupos.push({ exercicio_id: se.exercicio_id, ordem: se.ordem, series: [se] });
   });
+  // Observações anotadas no treino (também de exercícios sem série feita)
+  for (const n of sessao.notas ?? []) {
+    const g = grupos.find((x) => x.ordem === n.ordem && x.exercicio_id === n.exercicio_id);
+    if (g) g.nota = n.texto;
+    else grupos.push({ exercicio_id: n.exercicio_id, ordem: n.ordem, series: [], nota: n.texto });
+  }
   const hora = new Date(sessao.iniciado_em);
 
   return (
@@ -62,6 +68,12 @@ export default function DetalheSessao() {
                 </View>
                 <Icone nome="seta" tamanho={18} cor={cores.texto3} />
               </View>
+              {g.nota ? (
+                <View style={s.nota}>
+                  <Text style={s.notaRotulo}>📝 Observação</Text>
+                  <Text style={s.notaTexto}>{g.nota}</Text>
+                </View>
+              ) : null}
               {g.series.map((se) => (
                 <View key={se.serie} style={s.serie}>
                   <Text style={s.serieNum}>Série {se.serie}</Text>
@@ -84,6 +96,9 @@ export default function DetalheSessao() {
 }
 
 const s = StyleSheet.create({
+  nota: { backgroundColor: cores.lilas, borderRadius: 10, padding: 10, gap: 2 },
+  notaRotulo: { fontFamily: fontes.semi, fontSize: 11, color: cores.roxoEscuro },
+  notaTexto: { fontFamily: fontes.media, fontSize: 14, color: cores.texto, lineHeight: 19 },
   conteudo: { padding: 20, gap: 14, paddingBottom: 40 },
   titulo: { fontFamily: fontes.titulo, fontSize: 24, color: cores.texto },
   cinza: { fontFamily: fontes.regular, fontSize: 13, color: cores.texto2, paddingHorizontal: 0 },

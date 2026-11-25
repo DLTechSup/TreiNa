@@ -11,6 +11,7 @@ export type ResumoSessao = {
   exercicios: number;
   series: number;
   volume: number;
+  nota: string | null;
 };
 
 const SQL_RESUMO = `
@@ -41,7 +42,18 @@ export async function detalheSessao(db: SQLiteDatabase, id: string) {
   const series = await db.getAllAsync<SerieRegistro>(
     'SELECT exercicio_id, ordem, serie, repeticoes, carga FROM sessao_series WHERE sessao_id = ? ORDER BY ordem, serie', id,
   );
-  return sessao ? { ...sessao, registros: series } : null;
+  const notas = await db.getAllAsync<{ exercicio_id: string; ordem: number; texto: string }>(
+    'SELECT exercicio_id, ordem, texto FROM sessao_notas WHERE sessao_id = ? ORDER BY ordem', id,
+  );
+  return sessao ? { ...sessao, registros: series, notas } : null;
+}
+
+/** Última observação escrita num treino para este exercício. */
+export async function ultimaNota(db: SQLiteDatabase, exercicioId: string) {
+  return db.getFirstAsync<{ texto: string; data: string }>(
+    `SELECT n.texto, s.data FROM sessao_notas n JOIN sessoes s ON s.id = n.sessao_id
+     WHERE n.exercicio_id = ? ORDER BY s.data DESC, s.iniciado_em DESC LIMIT 1`, exercicioId,
+  );
 }
 
 /** Datas (AAAA-MM-DD) com treino num intervalo. */
@@ -111,6 +123,7 @@ export type PontoEvolucao = {
   maior_reps: number | null;
   series: number;
   volume: number;
+  nota: string | null;
 };
 
 /** Evolução de um exercício, sessão a sessão (da mais antiga para a mais recente). */
@@ -125,7 +138,7 @@ export async function evolucaoExercicio(db: SQLiteDatabase, exercicioId: string)
   for (const l of linhas) {
     let p = mapa.get(l.sessao_id);
     if (!p) {
-      p = { sessao_id: l.sessao_id, data: l.data, maior_carga: null, reps_na_maior: null, maior_reps: null, series: 0, volume: 0 };
+      p = { sessao_id: l.sessao_id, data: l.data, maior_carga: null, reps_na_maior: null, maior_reps: null, series: 0, volume: 0, nota: null };
       mapa.set(l.sessao_id, p);
     }
     p.series++;
@@ -135,6 +148,11 @@ export async function evolucaoExercicio(db: SQLiteDatabase, exercicioId: string)
       p.reps_na_maior = l.repeticoes;
     }
     if (l.repeticoes != null) p.maior_reps = Math.max(p.maior_reps ?? 0, l.repeticoes);
+  }
+  const notas = await db.getAllAsync<{ sessao_id: string; texto: string }>('SELECT sessao_id, texto FROM sessao_notas WHERE exercicio_id = ?', exercicioId);
+  for (const n of notas) {
+    const p = mapa.get(n.sessao_id);
+    if (p) p.nota = p.nota ? `${p.nota}\n${n.texto}` : n.texto;
   }
   return [...mapa.values()];
 }

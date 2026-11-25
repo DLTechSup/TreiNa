@@ -185,6 +185,11 @@ export default function EditarDia() {
                     ))}
                   </View>
                 </View>
+                <View style={{ gap: 4 }}>
+                  <Text style={s.rotuloPeq}>Observação</Text>
+                  <TextInput value={it.observacao ?? ''} onChangeText={(t) => atualizar(it.id, { observacao: t })} style={s.inputObs}
+                    placeholder="Ex.: subir para 12 kg quando fizer 12 reps" placeholderTextColor={cores.texto3} multiline maxLength={300} />
+                </View>
               </View>
             );
           })}
@@ -225,6 +230,7 @@ const s = StyleSheet.create({
   rotuloPeq: { fontFamily: fontes.media, fontSize: 11, color: cores.texto2 },
   cinza: { fontFamily: fontes.regular, fontSize: 12, color: cores.texto2 },
   input: { height: 46, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.cartao, paddingHorizontal: 12, fontFamily: fontes.media, fontSize: 16, color: cores.texto },
+  inputObs: { minHeight: 44, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.fundo, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fontes.media, fontSize: 16, color: cores.texto, textAlignVertical: 'top' },
   inputPeq: { height: 42, borderRadius: 12, borderWidth: 1, borderColor: cores.borda, backgroundColor: cores.fundo, paddingHorizontal: 10, fontFamily: fontes.negrito, fontSize: 16, color: cores.texto, textAlign: 'center' },
   grupos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   linhaTitulo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },

@@ -67,7 +67,7 @@ function estavel(v: unknown): string {
   if (Array.isArray(v)) return `[${v.map(estavel).join(',')}]`;
   if (v && typeof v === 'object') {
     const o = v as Record<string, unknown>;
-    return `{${Object.keys(o).sort().map((k) => `${JSON.stringify(k)}:${estavel(o[k])}`).join(',')}}`;
+    return `{${Object.keys(o).filter((k) => o[k] != null).sort().map((k) => `${JSON.stringify(k)}:${estavel(o[k])}`).join(',')}}`;
   }
   return JSON.stringify(v ?? null);
 }
