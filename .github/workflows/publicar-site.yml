@@ -1,4 +1,5 @@
 # Publica o TreiNa como site no GitHub Pages a cada mudança na branch main.
+# O site montado vai para a branch "gh-pages" (Settings > Pages > Deploy from a branch > gh-pages / root).
 # Também dá para rodar na mão: aba Actions > "Publicar site" > Run workflow.
 name: Publicar site
 
@@ -8,16 +9,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: publicar-site
   cancel-in-progress: true
 
 jobs:
-  gerar:
+  publicar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -53,16 +52,16 @@ jobs:
           npx expo export --platform web
           node scripts/pos_build_web.js
 
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
-
-  publicar:
-    needs: gerar
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.publicacao.outputs.page_url }}
-    steps:
-      - id: publicacao
-        uses: actions/deploy-pages@v5
+      - name: Enviar o site para a branch gh-pages
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          cd dist
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Site gerado a partir de ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${REPO}.git" gh-pages
+          echo "Site enviado para a branch gh-pages. Endereço: https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${{ github.event.repository.name }}/"
