@@ -1,0 +1,66 @@
+# Publica o TreiNa como site no GitHub Pages a cada mudança na branch main.
+# Também dá para rodar na mão: aba Actions > "Publicar site" > Run workflow.
+name: Publicar site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci --no-audit --no-fund
+
+      - name: Dados do Supabase (Settings > Secrets and variables > Actions > Variables)
+        env:
+          URL: ${{ vars.SUPABASE_URL }}
+          CHAVE: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -n "$URL" ] && [ -n "$CHAVE" ]; then
+            printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=%s\n' "$URL" "$CHAVE" > .env
+            echo "Supabase configurado."
+          else
+            echo "::warning::Variáveis SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY não cadastradas: o site vai funcionar, mas sem login e sem backup na nuvem."
+          fi
+
+      - name: Gerar o site
+        env:
+          EXPO_NO_TELEMETRY: 1
+          NOME_REPO: ${{ github.event.repository.name }}
+        run: |
+          if [[ "$NOME_REPO" == *.github.io ]]; then export TREINA_BASE_URL=""; else export TREINA_BASE_URL="/$NOME_REPO"; fi
+          npx expo export --platform web
+          node scripts/pos_build_web.js
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  publicar:
+    needs: gerar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.publicacao.outputs.page_url }}
+    steps:
+      - id: publicacao
+        uses: actions/deploy-pages@v4

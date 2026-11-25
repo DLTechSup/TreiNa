@@ -1,0 +1,302 @@
+[
+ {
+  "nome": "Glúteo, Pernas e Ombros",
+  "local": "Academia",
+  "dias": [
+   {
+    "dia": "Seg",
+    "titulo": "Glúteo e Posterior de Coxa",
+    "exercicios": [
+     {
+      "id": "elevacao-pelvica-com-barra",
+      "series": 4,
+      "repeticoes": "10-12",
+      "descanso": 90
+     },
+     {
+      "id": "levantamento-terra-romeno-com-halteres",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "agachamento-bulgaro-com-halteres",
+      "series": 3,
+      "repeticoes": "10 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "mesa-flexora",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "gluteo-coice-unilateral-na-polia-baixa",
+      "series": 3,
+      "repeticoes": "12-15 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "maquina-de-abducao-de-quadril",
+      "series": 3,
+      "repeticoes": "15-20",
+      "descanso": 45
+     }
+    ]
+   },
+   {
+    "dia": "Ter",
+    "titulo": "Ombros com Volume",
+    "exercicios": [
+     {
+      "id": "desenvolvimento-de-ombro-no-banco-com-halteres",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "elevacao-lateral-de-bracos-com-halteres",
+      "series": 4,
+      "repeticoes": "12-15",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-lateral-unilateral-com-cabo",
+      "series": 3,
+      "repeticoes": "12-15 cada braço",
+      "descanso": 45
+     },
+     {
+      "id": "voador-invertido",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "face-pull",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "puxada-alta",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     }
+    ]
+   },
+   {
+    "dia": "Qui",
+    "titulo": "Pernas (quadríceps) e Glúteo",
+    "exercicios": [
+     {
+      "id": "agachamento-no-smith",
+      "series": 4,
+      "repeticoes": "10",
+      "descanso": 90
+     },
+     {
+      "id": "leg-press",
+      "series": 4,
+      "repeticoes": "12",
+      "descanso": 90
+     },
+     {
+      "id": "afundo-com-halteres",
+      "series": 3,
+      "repeticoes": "10 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "cadeira-extensora",
+      "series": 3,
+      "repeticoes": "12-15",
+      "descanso": 45
+     },
+     {
+      "id": "agachamento-sumo-com-halteres",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "elevacao-de-panturrilha-em-maquina-em-pe",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     }
+    ]
+   },
+   {
+    "dia": "Sex",
+    "titulo": "Glúteo e Ombros",
+    "exercicios": [
+     {
+      "id": "ponte-de-gluteos-com-barra",
+      "series": 4,
+      "repeticoes": "12",
+      "descanso": 90
+     },
+     {
+      "id": "stiff-com-halter",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "abducao-de-quadril-com-cabo",
+      "series": 3,
+      "repeticoes": "15 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "gluteo-coice-na-maquina",
+      "series": 3,
+      "repeticoes": "12 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-lateral-na-maquina",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "desenvolvimento-arnold",
+      "series": 3,
+      "repeticoes": "10",
+      "descanso": 60
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "nome": "Glúteo e Ombros em Casa",
+  "local": "Casa (elástico)",
+  "dias": [
+   {
+    "dia": "Seg",
+    "titulo": "Glúteo",
+    "exercicios": [
+     {
+      "id": "elevacao-pelvica-com-banda-de-resistencia",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 60
+     },
+     {
+      "id": "agachamento-bulgaro-com-peso-corporal",
+      "series": 3,
+      "repeticoes": "12 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "gluteos-coice-com-faixa-elastica",
+      "series": 3,
+      "repeticoes": "15 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "abducao-de-quadril-com-faixa",
+      "series": 3,
+      "repeticoes": "20",
+      "descanso": 45
+     },
+     {
+      "id": "stiff-com-elastico-de-resistencia",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 60
+     },
+     {
+      "id": "caminhada-lateral-com-faixa-de-resistencia",
+      "series": 3,
+      "repeticoes": "40 s",
+      "descanso": 30
+     }
+    ]
+   },
+   {
+    "dia": "Qua",
+    "titulo": "Ombros com Volume",
+    "exercicios": [
+     {
+      "id": "desenvolvimento-de-ombro-sentado-com-faixa-de-resistencia",
+      "series": 4,
+      "repeticoes": "12",
+      "descanso": 60
+     },
+     {
+      "id": "elevacao-lateral-de-bracos",
+      "series": 4,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "remada-com-banda-de-resistencia-curvada-para-deltoides-posterior",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-frontal-lateral-com-elastico",
+      "series": 3,
+      "repeticoes": "12",
+      "descanso": 45
+     },
+     {
+      "id": "flexao-de-joelhos",
+      "series": 3,
+      "repeticoes": "10-12",
+      "descanso": 60
+     }
+    ]
+   },
+   {
+    "dia": "Sex",
+    "titulo": "Pernas e Posterior",
+    "exercicios": [
+     {
+      "id": "agachamento-sumo-sem-pesos",
+      "series": 4,
+      "repeticoes": "20",
+      "descanso": 60
+     },
+     {
+      "id": "afundo",
+      "series": 3,
+      "repeticoes": "12 cada perna",
+      "descanso": 60
+     },
+     {
+      "id": "flexao-de-pernas-deitado-com-faixa-elastica",
+      "series": 3,
+      "repeticoes": "15",
+      "descanso": 45
+     },
+     {
+      "id": "ponte-unilateral-no-banco",
+      "series": 3,
+      "repeticoes": "12 cada perna",
+      "descanso": 45
+     },
+     {
+      "id": "wall-sit",
+      "series": 3,
+      "repeticoes": "40 s",
+      "descanso": 45
+     },
+     {
+      "id": "elevacao-de-panturrilha-em-pe",
+      "series": 3,
+      "repeticoes": "20",
+      "descanso": 30
+     }
+    ]
+   }
+  ]
+ }
+]

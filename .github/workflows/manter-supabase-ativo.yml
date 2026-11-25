@@ -1,0 +1,55 @@
+# O plano grátis do Supabase pausa o projeto depois de 7 dias sem uso.
+# Este robô "cutuca" o banco a cada 2 dias (grava a hora numa tabelinha), então ele nunca pausa.
+# E, como o GitHub desliga robôs agendados de repositórios parados há 60 dias,
+# ele mesmo faz um commit pequeno quando o repositório fica 40 dias sem mudanças.
+name: Manter Supabase ativo
+
+on:
+  schedule:
+    - cron: '23 14 */2 * *'   # a cada 2 dias, 11h23 (horário de Brasília)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cutucar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cutucar o banco do Supabase
+        env:
+          URL: ${{ vars.SUPABASE_URL }}
+          CHAVE: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$CHAVE" ]; then
+            echo "::warning::Cadastre as variáveis SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY no repositório."
+            exit 0
+          fi
+          for tentativa in 1 2 3 4 5; do
+            codigo=$(curl -sS -o resposta.txt -w '%{http_code}' -X POST "${URL%/}/rest/v1/rpc/treina_manter_ativo" \
+              -H "apikey: $CHAVE" -H "Content-Type: application/json" -d '{}' || echo 000)
+            if [ "$codigo" = "200" ]; then
+              echo "Supabase ativo. Último sinal: $(cat resposta.txt)"
+              exit 0
+            fi
+            echo "Tentativa $tentativa falhou (HTTP $codigo): $(cat resposta.txt 2>/dev/null)"
+            sleep $((tentativa * 30))
+          done
+          echo "::error::Não consegui falar com o Supabase. Se o projeto estiver pausado, entre no painel do Supabase e clique em Resume project."
+          exit 1
+
+      - uses: actions/checkout@v6
+
+      - name: Manter o repositório ativo (evita o GitHub desligar este robô)
+        run: |
+          ultimo=$(git log -1 --format=%ct)
+          dias=$(( ( $(date +%s) - ultimo ) / 86400 ))
+          echo "Último commit há $dias dias."
+          if [ "$dias" -ge 40 ]; then
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/ultimo-sinal.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/ultimo-sinal.txt
+            git commit -m "Manter repositório ativo"
+            git push
+          fi

@@ -1,0 +1,68 @@
+TreiNa - App de treino (Android e iOS)
+======================================
+Fase 2: base do app. Projeto Expo SDK 58 (React Native).
+
+O QUE JÁ FUNCIONA
+- Início: saudação com o nome, atalhos, grupos musculares e favoritos
+- Biblioteca: os 963 exercícios, busca (com ou sem acento), filtro por grupo,
+  equipamento, favoritos e "Foco feminino"; dentro de cada grupo, os exercícios
+  aparecem separados por variação (padrão de movimento)
+- Ficha do exercício: vídeo em loop, "Como fazer" em 4 passos, erro comum,
+  músculos que também trabalham e variações para trocar
+- Perfil: nome, idade, peso, altura, sexo, objetivo, nível, dias, tempo e local;
+  calcula o IMC; fica salvo no celular
+- TreiNa Mulher: planos Academia (4 dias) e Casa com elástico (3 dias)
+- Treinos e Histórico: chegam na Fase 3 (montar o treino do dia, timers e histórico)
+
+COMO TESTAR NO CELULAR
+1. Precisa do Node.js (versão LTS) instalado: https://nodejs.org
+   No instalador, escolha uma pasta no disco F (ex.: F:\nodejs).
+2. Dê dois cliques em INSTALAR.bat (só na primeira vez; demora alguns minutos).
+   Ele copia os vídeos de ..\TreiNa_assets e instala as dependências.
+3. Dê dois cliques em INICIAR.bat. Aparece um QR code.
+4. No celular, instale o app "Expo Go" (Play Store / App Store), conecte no
+   mesmo Wi-Fi do PC e leia o QR code. O TreiNa abre no celular.
+
+TUDO FICA NO DISCO F
+- node_modules\   dependências do app (dentro desta pasta)
+- _cache\         cache do npm, temporários e configurações do Expo
+- assets\videos e assets\miniaturas   cópia dos vídeos (46 MB)
+Os .bat apontam o cache, os temporários e as configurações para esta pasta.
+
+GERAR O APK (ANDROID) - APP INSTALADO DE VERDADE
+1. Crie uma conta gratuita em https://expo.dev/signup
+2. Dê dois cliques em GERAR_APK_ANDROID.bat e entre com o e-mail e a senha do Expo.
+3. Na primeira vez ele pergunta se cria o projeto e a chave do Android: responda Y.
+4. O APK é montado nos servidores do Expo (10 a 30 min) e baixado para:
+   TreiNa_App\APK\TreiNa.apk
+5. Envie o TreiNa.apk para o celular Android, toque nele e permita
+   "instalar apps desconhecidos". Ele funciona sem o PC e sem internet.
+O login do Expo e os temporários também ficam na pasta _cache, no disco F.
+
+EDITOU AS PLANILHAS?
+Se mudar dicas ou nomes no ..\TreiNa_Fase1\exercicios.csv, rode o
+ATUALIZAR_DADOS.bat. Com o INICIAR.bat aberto, o celular atualiza sozinho.
+
+ARQUIVOS DO PROJETO
+src\app\           telas (cada arquivo é uma tela)
+src\components\    peças reutilizáveis (ícones, botões, linha de exercício)
+src\data\          exercícios, planos e mapa dos vídeos (gerados pelo script)
+src\db\banco.tsx   banco de dados do celular (perfil e favoritos)
+src\db\nuvem.tsx   login com Google + backup automático na nuvem (Supabase)
+src\db\sqlite.web.tsx   banco da versão site (fica guardado no navegador)
+supabase\treina_supabase.sql   SQL para colar no Supabase (tabelas + segurança)
+.github\workflows\   robôs do GitHub: publicar o site e manter o Supabase ativo
+scripts\gerar_dados.py   lê as planilhas e gera src\data
+
+SITE (IPHONE E NAVEGADOR) - https://dltechsup.github.io/TreiNa/
+- O código fica no GitHub: https://github.com/DLTechSup/TreiNa
+- Toda mudança enviada para o GitHub publica o site sozinho (aba Actions).
+- No iPhone: abrir o site no Safari > Compartilhar > "Adicionar à Tela de Início".
+  Os dados ficam guardados no próprio iPhone; com a conta Google, também na nuvem.
+
+LOGIN COM GOOGLE E BACKUP NA NUVEM (SUPABASE)
+- Siga o guia "TreiNa: configurar Supabase e login com Google".
+- No site: os dados do Supabase vão nas Variables do repositório no GitHub.
+- No Expo Go e no APK: os dados do Supabase vão no arquivo .env desta pasta.
+- O robô "Manter Supabase ativo" (GitHub) cutuca o banco a cada 2 dias para o
+  plano grátis do Supabase nunca pausar o projeto.
