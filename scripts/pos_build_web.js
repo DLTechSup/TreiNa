@@ -15,6 +15,24 @@ if (!fs.existsSync(indexPath)) {
   process.exit(1);
 }
 
+// O GitHub Pages recusa publicar sites com uma pasta chamada "node_modules" (erro 500).
+// O Expo põe fontes e ícones em assets/node_modules: renomeia a pasta e corrige os endereços.
+const pastaNm = path.join(dist, 'assets', 'node_modules');
+if (fs.existsSync(pastaNm)) {
+  fs.renameSync(pastaNm, path.join(dist, 'assets', 'pacotes'));
+  const corrigir = (dir) => {
+    for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, item.name);
+      if (item.isDirectory()) corrigir(p);
+      else if (/\.(js|html|json|css|map)$/.test(item.name)) {
+        const txt = fs.readFileSync(p, 'utf8');
+        if (txt.includes('assets/node_modules/')) fs.writeFileSync(p, txt.split('assets/node_modules/').join('assets/pacotes/'));
+      }
+    }
+  };
+  corrigir(dist);
+}
+
 const manifest = {
   name: 'TreiNa',
   short_name: 'TreiNa',
