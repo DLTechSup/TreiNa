@@ -63,3 +63,12 @@ insert into public.acesso_liberado (email) values
   ('EMAIL_DELA@gmail.com'),
   ('SEU_EMAIL@gmail.com')
 on conflict (email) do nothing;
+
+-- 5) Função interna do Supabase que liga o RLS sozinho em tabela nova (se existir).
+--    Continua funcionando; só deixa de poder ser chamada pela internet.
+do $$
+begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+  end if;
+end $$;

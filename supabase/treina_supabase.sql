@@ -134,6 +134,8 @@ as $$
 $$;
 
 revoke all on function public.treina_manter_ativo() from public;
-grant execute on function public.treina_manter_ativo() to anon, authenticated;
+-- só o robô do GitHub (chave publishable = papel anon) precisa chamar; conta logada não
+revoke all on function public.treina_manter_ativo() from authenticated;
+grant execute on function public.treina_manter_ativo() to anon;
 
 -- Pronto! Para conferir: Table Editor > backups (fica vazia até alguém entrar no app).
