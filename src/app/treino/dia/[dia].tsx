@@ -152,13 +152,11 @@ export default function EditarDia() {
             return (
               <View key={it.id} style={s.item}>
                 <View style={s.itemTopo}>
-                  <Pressable onPress={() => router.push({ pathname: '/exercicio/[id]', params: { id: it.exercicio_id } })}>
-                    <Miniatura id={it.exercicio_id} tamanho={52} />
-                  </Pressable>
-                  <View style={{ flex: 1 }}>
+                  <Miniatura id={it.exercicio_id} tamanho={52} telaCheia />
+                  <Pressable style={{ flex: 1 }} onPress={() => router.push({ pathname: '/exercicio/[id]', params: { id: it.exercicio_id } })}>
                     <Text style={s.itemNome} numberOfLines={2}>{i + 1}. {e?.nome ?? it.exercicio_id}</Text>
                     <Text style={s.itemInfo} numberOfLines={1}>{e?.grupo} · {e?.equipamento}</Text>
-                  </View>
+                  </Pressable>
                   <View style={s.acoesSetas}>
                     <Pressable onPress={() => mover(i, -1)} style={[s.acao, i === 0 && { opacity: 0.35 }]} hitSlop={2} accessibilityLabel="Subir"><Text style={s.acaoTexto}>↑</Text></Pressable>
                     <Pressable onPress={() => mover(i, 1)} style={[s.acao, i === itens.length - 1 && { opacity: 0.35 }]} hitSlop={2} accessibilityLabel="Descer"><Text style={s.acaoTexto}>↓</Text></Pressable>

@@ -61,7 +61,7 @@ export default function DetalheSessao() {
           return (
             <Pressable key={`${g.exercicio_id}-${i}`} style={s.ex} onPress={() => router.push({ pathname: '/historico/exercicio/[id]', params: { id: g.exercicio_id } })}>
               <View style={s.exTopo}>
-                <Miniatura id={g.exercicio_id} tamanho={48} />
+                <Miniatura id={g.exercicio_id} tamanho={48} telaCheia />
                 <View style={{ flex: 1 }}>
                   <Text style={s.exNome} numberOfLines={2}>{e?.nome ?? g.exercicio_id}</Text>
                   <Text style={s.cinzaPeq}>{e?.grupo} · {e?.equipamento}</Text>

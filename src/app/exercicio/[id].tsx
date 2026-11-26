@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Icone } from '@/components/Icone';
 import { VideoDoExercicio } from '@/components/Midia';
+import { ToqueTelaCheia } from '@/components/TelaCheia';
 import { Botao, BotaoIcone, Miniatura, TopoVoltar } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { porId, variacoes } from '@/data';
@@ -60,10 +61,10 @@ function Ficha({ id }: { id: string }) {
         }
       />
       <ScrollView contentContainerStyle={s.conteudo}>
-        <View style={[s.video, e.video ? { aspectRatio: undefined, height: alturaVideo, maxHeight: undefined, backgroundColor: '#000' } : null]}>
+        <ToqueTelaCheia id={e.id} style={[s.video, e.video ? { aspectRatio: undefined, height: alturaVideo, maxHeight: undefined, backgroundColor: '#000' } : null]}>
           <VideoDoExercicio id={e.id} />
           <Text style={s.selo}>{e.medida === 'tempo' ? 'POSIÇÃO / TEMPO' : 'EM LOOP'}</Text>
-        </View>
+        </ToqueTelaCheia>
 
         <View style={{ gap: 8 }}>
           <Text style={s.nome}>{e.nome}</Text>

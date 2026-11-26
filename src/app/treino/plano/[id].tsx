@@ -58,7 +58,7 @@ export default function VerPlano() {
               const e = porId(it.id);
               return (
                 <View key={`${it.id}-${i}`} style={s.item}>
-                  <Miniatura id={it.id} tamanho={44} />
+                  <Miniatura id={it.id} tamanho={44} telaCheia />
                   <View style={{ flex: 1 }}>
                     <Text style={s.itemNome} numberOfLines={2}>{e?.nome}</Text>
                     <Text style={s.itemInfo}>{it.series} × {it.repeticoes} · descanso {descanso(it.descanso)} · {e?.equipamento}</Text>

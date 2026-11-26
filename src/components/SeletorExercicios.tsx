@@ -8,6 +8,7 @@ import { Botao, Chip } from './ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { filtrar, grupos, type Exercicio } from '@/data';
 import { MiniaturaExercicio, VideoDoExercicio } from './Midia';
+import { BotaoTelaCheia } from './TelaCheia';
 
 type Props = {
   visivel: boolean;
@@ -142,15 +143,18 @@ export function SeletorExercicios({ visivel, gruposDoDia, jaNoDia, onFechar, onA
 function Cartao({ e, largura, mexendo, marcado, jaNoDia, onPress }: {
   e: Exercicio; largura: number; mexendo: boolean; marcado: boolean; jaNoDia: boolean; onPress: () => void;
 }) {
+  const alturaMidia = Math.round(largura * (e.video ? 4 / 3 : 1)) - 4;
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [s.cartao, { width: largura }, marcado && s.cartaoMarcado, pressed && { opacity: 0.85 }]}
       accessibilityRole="checkbox" accessibilityState={{ checked: marcado }} accessibilityLabel={e.nome}>
-      <View style={[s.midia, { height: Math.round(largura * (e.video ? 4 / 3 : 1)) - 4 }]} pointerEvents="none">
+      <View style={[s.midia, { height: alturaMidia }]} pointerEvents="none">
         {/* A imagem fica por baixo: aparece enquanto o vídeo carrega (ou se o celular estiver em economia de bateria) */}
         <MiniaturaExercicio id={e.id} style={StyleSheet.absoluteFill} ajuste="contain" />
         {mexendo && <VideoDoExercicio id={e.id} ajuste={e.video ? 'cover' : 'contain'} />}
         {jaNoDia && <Text style={s.selo}>Já no dia</Text>}
       </View>
+      {/* o toque no cartão marca; este botão abre o vídeo em tela cheia */}
+      <BotaoTelaCheia id={e.id} style={{ position: 'absolute', top: alturaMidia - 44, right: 8 }} />
       <View style={[s.check, marcado && s.checkAtivo]} pointerEvents="none">
         {marcado && <Icone nome="check" tamanho={18} cor={cores.textoClaro} espessura={3} />}
       </View>

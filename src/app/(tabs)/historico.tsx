@@ -171,7 +171,7 @@ export default function Historico() {
               return (
                 <Pressable key={x.exercicio_id} onPress={() => router.push({ pathname: '/historico/exercicio/[id]', params: { id: x.exercicio_id } })}
                   style={({ pressed }) => [s.exLinha, pressed && { opacity: 0.85 }]}>
-                  <Miniatura id={x.exercicio_id} tamanho={48} />
+                  <Miniatura id={x.exercicio_id} tamanho={48} telaCheia />
                   <View style={{ flex: 1 }}>
                     <Text style={s.exNome} numberOfLines={1}>{e?.nome ?? x.exercicio_id}</Text>
                     <Text style={s.exInfo}>{x.sessoes} {x.sessoes === 1 ? 'treino' : 'treinos'} · último em {dataCurta(x.ultima_data)}</Text>

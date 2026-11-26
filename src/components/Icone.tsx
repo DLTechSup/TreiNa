@@ -2,7 +2,7 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 export type NomeIcone =
   | 'inicio' | 'biblioteca' | 'treinos' | 'historico' | 'perfil'
-  | 'busca' | 'estrela' | 'voltar' | 'info' | 'alerta' | 'check' | 'fechar' | 'seta' | 'mulher' | 'nuvem';
+  | 'busca' | 'estrela' | 'voltar' | 'info' | 'alerta' | 'check' | 'fechar' | 'seta' | 'mulher' | 'nuvem' | 'telaCheia';
 
 type Props = { nome: NomeIcone; tamanho?: number; cor?: string; preenchido?: boolean; espessura?: number };
 
@@ -59,6 +59,7 @@ export function Icone({ nome, tamanho = 24, cor = '#16161D', preenchido = false,
           <Path {...p} d="M12 14v7M9 18h6" />
         </>
       )}
+      {nome === 'telaCheia' && <Path {...p} d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />}
       {nome === 'nuvem' && (
         <Path {...p} d="M7 19h10.5a4.5 4.5 0 0 0 .6-8.96A6 6 0 0 0 6.3 9.5 4.75 4.75 0 0 0 7 19z" />
       )}

@@ -30,7 +30,7 @@ export default function EvolucaoExercicio() {
       <TopoVoltar titulo="Evolução" />
       <ScrollView contentContainerStyle={s.conteudo}>
         <View style={s.topo}>
-          <Miniatura id={id} tamanho={64} raioBorda={14} />
+          <Miniatura id={id} tamanho={64} raioBorda={14} telaCheia />
           <View style={{ flex: 1 }}>
             <Text style={s.nome}>{e?.nome ?? id}</Text>
             <Text style={s.cinza}>{e?.grupo} · {e?.equipamento}</Text>

@@ -10,6 +10,7 @@ import { Botao, Miniatura } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { porId } from '@/data';
 import { VideoDoExercicio } from '@/components/Midia';
+import { ToqueTelaCheia } from '@/components/TelaCheia';
 import { repsAlvo, segundosAlvo } from '@/data/planos';
 import { NOMES_DIAS, gravarMeta, lerMeta, useDados, type ItemPlano, type SerieFeita } from '@/db/banco';
 import { maioresCargas, ultimaCarga, ultimaNota } from '@/db/historico';
@@ -256,7 +257,7 @@ export default function Executar() {
           <View style={s.cartaoLista}>
             {itens.map((it, i) => (
               <View key={it.id} style={s.linhaLista}>
-                <Miniatura id={it.exercicio_id} tamanho={44} />
+                <Miniatura id={it.exercicio_id} tamanho={44} telaCheia />
                 <View style={{ flex: 1 }}>
                   <Text style={s.linhaNome} numberOfLines={1}>{i + 1}. {porId(it.exercicio_id)?.nome}</Text>
                   <Text style={s.linhaInfo}>{it.series} × {it.repeticoes}{cargas[i] != null ? ` · ${kg(cargas[i])}` : ''} · descanso {txtDescanso(it.descanso)}</Text>
@@ -293,9 +294,9 @@ export default function Executar() {
           </View>
 
           <ScrollView ref={rolagem} style={{ flex: 1 }} contentContainerStyle={s.serie}>
-            <View style={[s.videoCaixa, { height: alturaVideo }]}>
-              <VideoDoExercicio key={item.exercicio_id} id={item.exercicio_id} />
-            </View>
+            <ToqueTelaCheia key={item.exercicio_id} id={item.exercicio_id} style={[s.videoCaixa, { height: alturaVideo }]}>
+              <VideoDoExercicio id={item.exercicio_id} />
+            </ToqueTelaCheia>
 
             <View style={{ gap: 4 }}>
               <Text style={s.contagem}>EXERCÍCIO {ex + 1} DE {itens.length}</Text>
@@ -417,7 +418,7 @@ export default function Executar() {
                 const atual = i === ex;
                 return (
                   <Pressable key={it.id} onPress={() => { setLista(false); irParaExercicio(i, feitas); }} style={[s.modalLinha, atual && { backgroundColor: cores.lilas }]}>
-                    <Miniatura id={it.exercicio_id} tamanho={44} />
+                    <Miniatura id={it.exercicio_id} tamanho={44} telaCheia />
                     <View style={{ flex: 1 }}>
                       <Text style={s.modalNome} numberOfLines={1}>{i + 1}. {porId(it.exercicio_id)?.nome}</Text>
                       <Text style={s.modalInfo}>{feitasEx}/{it.series} séries{atual ? ' · agora' : ''}</Text>
