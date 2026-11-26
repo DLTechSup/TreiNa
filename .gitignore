@@ -45,3 +45,4 @@ example
 # TreiNa: caches e temporários do INSTALAR/INICIAR.bat (ficam no disco F)
 _cache/
 APK/
+lista_videos_local.json

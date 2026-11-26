@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
+import { BackHandler, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useVideoPlayer, VideoView } from 'expo-video';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 import { Icone } from '@/components/Icone';
@@ -10,7 +9,7 @@ import { BarraProgresso, Confirmar, Contador } from '@/components/pecas';
 import { Botao, Miniatura } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { porId } from '@/data';
-import { videos } from '@/data/midia';
+import { VideoDoExercicio } from '@/components/Midia';
 import { repsAlvo, segundosAlvo } from '@/data/planos';
 import { NOMES_DIAS, gravarMeta, lerMeta, useDados, type ItemPlano, type SerieFeita } from '@/db/banco';
 import { maioresCargas, ultimaCarga, ultimaNota } from '@/db/historico';
@@ -295,7 +294,7 @@ export default function Executar() {
 
           <ScrollView ref={rolagem} style={{ flex: 1 }} contentContainerStyle={s.serie}>
             <View style={[s.videoCaixa, { height: alturaVideo }]}>
-              <VideoExercicio key={item.exercicio_id} id={item.exercicio_id} />
+              <VideoDoExercicio key={item.exercicio_id} id={item.exercicio_id} />
             </View>
 
             <View style={{ gap: 4 }}>
@@ -440,12 +439,6 @@ export default function Executar() {
         onConfirmar={() => { setEncerrar(false); if (feitas.length) terminar(feitas); else { guardarNota(ex); sair(); } }} />
     </SafeAreaView>
   );
-}
-
-function VideoExercicio({ id }: { id: string }) {
-  const player = useVideoPlayer(videos[id], (p) => { p.loop = true; p.muted = true; p.play(); });
-  useEffect(() => { if (Platform.OS === 'web') player.play(); }, [player]);
-  return <VideoView player={player} style={{ width: '100%', height: '100%' }} contentFit="contain" nativeControls={false} playsInline />;
 }
 
 function Resumo({

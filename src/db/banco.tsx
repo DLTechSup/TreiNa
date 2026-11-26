@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import equivalencias from '@/data/equivalencias.json';
 import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from './sqlite';
 
 /* ------------------------------------------------------------------ */
@@ -11,6 +12,11 @@ const VERSAO = 4;
 export const TABELAS_BACKUP = ['perfil', 'favoritos', 'plano_dias', 'plano_itens', 'sessoes', 'sessao_series', 'sessao_notas'] as const;
 
 async function migrar(db: SQLiteDatabase) {
+  await criarOuAtualizarTabelas(db);
+  await trocarGifsPorVideos(db);
+}
+
+async function criarOuAtualizarTabelas(db: SQLiteDatabase) {
   const linha = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
   let versao = linha?.user_version ?? 0;
   if (versao >= VERSAO) return;
@@ -81,6 +87,33 @@ async function migrar(db: SQLiteDatabase) {
     versao = 4;
   }
   await db.execAsync(`PRAGMA user_version = ${versao}`);
+}
+
+/**
+ * Exercícios que ganharam vídeo próprio: o treino, o histórico e os favoritos passam a usar o vídeo
+ * no lugar do GIF equivalente (roda ao abrir o app; não faz nada se já estiver trocado).
+ */
+async function trocarGifsPorVideos(db: SQLiteDatabase) {
+  const pares = Object.entries(equivalencias as Record<string, string>);
+  if (!pares.length) return;
+  const lista = pares.map(([g]) => `'${g.replace(/'/g, "''")}'`).join(',');
+  const usados = await db.getFirstAsync<{ n: number }>(
+    `SELECT (SELECT COUNT(*) FROM plano_itens WHERE exercicio_id IN (${lista}))
+          + (SELECT COUNT(*) FROM sessao_series WHERE exercicio_id IN (${lista}))
+          + (SELECT COUNT(*) FROM sessao_notas WHERE exercicio_id IN (${lista}))
+          + (SELECT COUNT(*) FROM favoritos WHERE exercicio_id IN (${lista})) AS n`,
+  );
+  if (!usados?.n) return;
+  await db.withTransactionAsync(async () => {
+    for (const [gif, video] of pares) {
+      await db.runAsync('UPDATE plano_itens SET exercicio_id = ? WHERE exercicio_id = ?', video, gif);
+      await db.runAsync('UPDATE sessao_series SET exercicio_id = ? WHERE exercicio_id = ?', video, gif);
+      await db.runAsync('UPDATE sessao_notas SET exercicio_id = ? WHERE exercicio_id = ?', video, gif);
+      await db.runAsync('UPDATE OR IGNORE favoritos SET exercicio_id = ? WHERE exercicio_id = ?', video, gif);
+      await db.runAsync('DELETE FROM favoritos WHERE exercicio_id = ?', gif);
+    }
+  });
+  await gravarMeta(db, 'pendente', '1'); // o próximo backup leva a troca para a nuvem
 }
 
 export function BancoProvider({ children }: { children: ReactNode }) {

@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { Icone } from '@/components/Icone';
+import { VideoDoExercicio } from '@/components/Midia';
 import { Botao, BotaoIcone, Miniatura, TopoVoltar } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { porId, variacoes } from '@/data';
-import { videos } from '@/data/midia';
 import { NOMES_DIAS, novoId, useDados } from '@/db/banco';
 
 export default function FichaExercicio() {
@@ -46,16 +45,9 @@ function Ficha({ id }: { id: string }) {
   const favorito = favoritos.has(e.id);
   const lista = useMemo(() => variacoes(e), [e]);
 
-  // Vídeo em loop, sem som, começando sozinho (como um GIF)
-  const player = useVideoPlayer(videos[e.id], (p) => {
-    p.loop = true;
-    p.muted = true;
-    p.play();
-  });
-  // No site o vídeo só existe depois que a tela aparece: manda tocar de novo (no iPhone, em linha e sem som).
-  useEffect(() => {
-    if (Platform.OS === 'web') player.play();
-  }, [player]);
+  // Vídeo próprio (em pé, 9:16) ganha uma caixa mais alta, limitada pela altura da tela
+  const tela = useWindowDimensions();
+  const alturaVideo = e.video ? Math.min(Math.round((Math.min(tela.width, 560) - 40) * 1.25), Math.round(tela.height * 0.55)) : undefined;
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -68,8 +60,8 @@ function Ficha({ id }: { id: string }) {
         }
       />
       <ScrollView contentContainerStyle={s.conteudo}>
-        <View style={s.video}>
-          <VideoView player={player} style={s.videoView} contentFit="contain" nativeControls={false} playsInline />
+        <View style={[s.video, e.video ? { aspectRatio: undefined, height: alturaVideo, maxHeight: undefined, backgroundColor: '#000' } : null]}>
+          <VideoDoExercicio id={e.id} />
           <Text style={s.selo}>{e.medida === 'tempo' ? 'POSIÇÃO / TEMPO' : 'EM LOOP'}</Text>
         </View>
 
@@ -169,7 +161,6 @@ const s = StyleSheet.create({
     backgroundColor: '#FFFFFF', borderRadius: raio.g, borderWidth: 1, borderColor: cores.borda,
     aspectRatio: 1, maxHeight: 360, alignSelf: 'stretch', overflow: 'hidden', alignItems: 'center', justifyContent: 'center',
   },
-  videoView: { width: '100%', height: '100%', backgroundColor: '#FFFFFF' },
   selo: {
     position: 'absolute', left: 12, top: 12, backgroundColor: cores.escuro, color: cores.lima, overflow: 'hidden',
     fontFamily: fontes.negrito, fontSize: 11, letterSpacing: 0.4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6,

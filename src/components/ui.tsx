@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 
 import { cores, fontes, raio } from '@/constants/tema';
-import { miniaturas } from '@/data/midia';
+import { MiniaturaExercicio } from './Midia';
 import type { Exercicio } from '@/data';
 import { Icone } from './Icone';
 
@@ -121,7 +121,7 @@ export const LinhaExercicio = memo(function LinhaExercicio({ exercicio: e, favor
       style={({ pressed }) => [estilos.linha, pressed && { backgroundColor: '#FAFAF7' }]}
       accessibilityRole="button"
       accessibilityLabel={e.nome}>
-      <Image source={miniaturas[e.id]} style={estilos.linhaImg} contentFit="cover" transition={120} />
+      <MiniaturaExercicio id={e.id} style={estilos.linhaImg} />
       <View style={{ flex: 1 }}>
         <Text style={estilos.linhaNome} numberOfLines={2}>{e.nome}</Text>
         <Text style={estilos.linhaInfo} numberOfLines={1}>{detalhe ?? `${e.grupo} · ${e.equipamento}`}</Text>
@@ -136,7 +136,7 @@ export const LinhaExercicio = memo(function LinhaExercicio({ exercicio: e, favor
 
 export function Miniatura({ id, tamanho = 48, raioBorda = 10 }: { id: string; tamanho?: number; raioBorda?: number }) {
   return (
-    <Image source={miniaturas[id]} style={{ width: tamanho, height: tamanho, borderRadius: raioBorda, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda }} contentFit="cover" />
+    <MiniaturaExercicio id={id} style={{ width: tamanho, height: tamanho, borderRadius: raioBorda, backgroundColor: cores.cartao, borderWidth: 1, borderColor: cores.borda, overflow: 'hidden' }} />
   );
 }
 

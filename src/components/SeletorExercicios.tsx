@@ -1,15 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ListViewToken } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View, type ListViewToken } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
-import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { Icone } from './Icone';
 import { FaixaRolavel } from './pecas';
 import { Botao, Chip } from './ui';
 import { cores, fontes, raio } from '@/constants/tema';
 import { filtrar, grupos, type Exercicio } from '@/data';
-import { miniaturas, videos } from '@/data/midia';
+import { MiniaturaExercicio, VideoDoExercicio } from './Midia';
 
 type Props = {
   visivel: boolean;
@@ -147,10 +145,10 @@ function Cartao({ e, largura, mexendo, marcado, jaNoDia, onPress }: {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [s.cartao, { width: largura }, marcado && s.cartaoMarcado, pressed && { opacity: 0.85 }]}
       accessibilityRole="checkbox" accessibilityState={{ checked: marcado }} accessibilityLabel={e.nome}>
-      <View style={[s.midia, { height: largura - 4 }]} pointerEvents="none">
+      <View style={[s.midia, { height: Math.round(largura * (e.video ? 4 / 3 : 1)) - 4 }]} pointerEvents="none">
         {/* A imagem fica por baixo: aparece enquanto o vídeo carrega (ou se o celular estiver em economia de bateria) */}
-        <Image source={miniaturas[e.id]} style={StyleSheet.absoluteFill} contentFit="contain" />
-        {mexendo && <VideoMovimento id={e.id} />}
+        <MiniaturaExercicio id={e.id} style={StyleSheet.absoluteFill} ajuste="contain" />
+        {mexendo && <VideoDoExercicio id={e.id} ajuste={e.video ? 'cover' : 'contain'} />}
         {jaNoDia && <Text style={s.selo}>Já no dia</Text>}
       </View>
       <View style={[s.check, marcado && s.checkAtivo]} pointerEvents="none">
@@ -161,16 +159,6 @@ function Cartao({ e, largura, mexendo, marcado, jaNoDia, onPress }: {
         <Text style={s.info} numberOfLines={1}>{e.grupo} · {e.equipamento}</Text>
       </View>
     </Pressable>
-  );
-}
-
-function VideoMovimento({ id }: { id: string }) {
-  const player = useVideoPlayer(videos[id], (p) => { p.loop = true; p.muted = true; p.play(); });
-  useEffect(() => { if (Platform.OS === 'web') player.play(); }, [player]);
-  return (
-    <View style={StyleSheet.absoluteFill}>
-      <VideoView player={player} style={{ width: '100%', height: '100%' }} contentFit="contain" nativeControls={false} playsInline />
-    </View>
   );
 }
 

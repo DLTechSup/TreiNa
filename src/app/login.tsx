@@ -29,7 +29,7 @@ export default function TelaLogin() {
     if (!pronto) return;
     const pronta = (conta.usuario && conta.sincronizado) || tempoEsgotado || (!conta.usuario && tempoEsgotado);
     if (!pronta) return;
-    router.replace(perfil.nome ? '/' : conta.usuario ? '/cadastro' : '/boas-vindas');
+    router.replace(perfil.nome ? '/' : '/cadastro');
   }, [pronto, conta.usuario, conta.sincronizado, tempoEsgotado, perfil.nome, router]);
 
   return (

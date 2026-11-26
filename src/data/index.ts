@@ -1,4 +1,6 @@
 import listaExercicios from './exercicios.json';
+import listaVideos from './exercicios_video.json';
+import listaEquivalencias from './equivalencias.json';
 import listaProgramas from './programas.json';
 
 export type Exercicio = {
@@ -13,23 +15,44 @@ export type Exercicio = {
   passos: string[];
   erro: string;
   foco: string; // 'Glúteo' | 'Perna' | 'Posterior' | 'Ombro' | ''
+  /** Exercício com vídeo próprio (privado): chave do arquivo no armazenamento. Sem isso, usa o GIF do app. */
+  video?: string;
+  /** Tamanho do vídeo em bytes (para mostrar quanto a atualização baixa). */
+  bytes?: number;
 };
 
 export type ItemPrograma = { id: string; series: number; repeticoes: string; descanso: number };
 export type DiaPrograma = { dia: string; titulo: string; exercicios: ItemPrograma[] };
 export type Programa = { nome: string; local: string; dias: DiaPrograma[] };
 
-export const exercicios = listaExercicios as Exercicio[];
-export const programas = listaProgramas as Programa[];
+/** Exercícios com vídeo próprio (os vídeos ficam fora do site, só no celular de quem tem acesso). */
+export const exerciciosVideo = listaVideos as Exercicio[];
+/** GIF -> vídeo do mesmo exercício: o GIF sai da lista e os planos prontos usam o vídeo. */
+const equivalencias = listaEquivalencias as Record<string, string>;
+export const trocarPorVideo = (id: string) => equivalencias[id] ?? id;
+// vídeo -> GIF do mesmo exercício (mostrado enquanto o vídeo próprio não estiver disponível)
+const gifPorVideo = new Map<string, string>();
+for (const [gif, video] of Object.entries(equivalencias)) if (!gifPorVideo.has(video)) gifPorVideo.set(video, gif);
+export const gifDoVideo = (id: string) => gifPorVideo.get(id);
+const gifs = listaExercicios as Exercicio[];
+/** Lista que aparece no app: todos os vídeos + os GIFs que não têm vídeo equivalente. */
+export const exercicios: Exercicio[] = [...exerciciosVideo, ...gifs.filter((e) => !equivalencias[e.id])];
+export const programas = (listaProgramas as Programa[]).map((p) => ({
+  ...p,
+  dias: p.dias.map((d) => ({ ...d, exercicios: d.exercicios.map((x) => ({ ...x, id: trocarPorVideo(x.id) })) })),
+}));
 
-const porIdMapa = new Map(exercicios.map((e) => [e.id, e]));
+// porId também acha GIFs que saíram da lista (treinos e histórico antigos continuam funcionando)
+const porIdMapa = new Map([...gifs, ...exerciciosVideo].map((e) => [e.id, e]));
 export const porId = (id: string) => porIdMapa.get(id);
+export const temVideo = (e?: Exercicio) => !!e?.video;
+export const totalBytesVideos = exerciciosVideo.reduce((n, e) => n + (e.bytes ?? 0), 0);
 
 /** Tira acentos e deixa minúsculo, para a busca achar "glúteo" digitando "gluteo". */
 export const normalizar = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
-const indiceBusca = new Map(exercicios.map((e) => [e.id, normalizar(`${e.nome} ${e.grupo} ${e.padrao} ${e.equipamento}`)]));
+const indiceBusca = new Map([...porIdMapa.values()].map((e) => [e.id, normalizar(`${e.nome} ${e.grupo} ${e.padrao} ${e.equipamento}`)]));
 
 function contar<T extends string>(valores: T[]) {
   const mapa = new Map<T, number>();
@@ -38,7 +61,7 @@ function contar<T extends string>(valores: T[]) {
 }
 
 /** Ordem dos grupos no app: academia primeiro, cardio e mobilidade no fim. */
-export const ORDEM_GRUPOS = ['Peito', 'Costas', 'Ombros', 'Pernas', 'Glúteos', 'Bíceps', 'Tríceps', 'Trapézio', 'Panturrilha', 'Antebraço', 'Cardio', 'Mobilidade'];
+export const ORDEM_GRUPOS = ['Peito', 'Costas', 'Ombros', 'Pernas', 'Glúteos', 'Bíceps', 'Tríceps', 'Abdômen', 'Trapézio', 'Panturrilha', 'Antebraço', 'Cardio', 'Mobilidade'];
 const posGrupo = (g: string) => { const i = ORDEM_GRUPOS.indexOf(g); return i < 0 ? 99 : i; };
 export const grupos = contar(exercicios.map((e) => e.grupo)).sort((a, b) => posGrupo(a.nome) - posGrupo(b.nome));
 export const equipamentos = contar(exercicios.map((e) => e.equipamento)).sort((a, b) => b.total - a.total);

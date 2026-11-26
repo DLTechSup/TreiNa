@@ -11,9 +11,11 @@ import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
 import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
 import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk/700Bold';
 
+import { Portao } from '@/components/Portao';
 import { BancoProvider } from '@/db/banco';
 import { ContaProvider } from '@/db/nuvem';
 import { cores } from '@/constants/tema';
+import { verificarVideos } from '@/lib/midiaPrivada';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,6 +28,9 @@ export default function RootLayout() {
     if (fontesProntas) SplashScreen.hideAsync();
   }, [fontesProntas]);
 
+  // Quantos vídeos dos exercícios já estão guardados no celular
+  useEffect(() => { verificarVideos(); }, []);
+
   if (!fontesProntas) return null;
 
   return (
@@ -35,6 +40,7 @@ export default function RootLayout() {
         {/* No computador o site fica numa coluna do tamanho de um celular, centralizada */}
         <View style={Platform.OS === 'web' ? { flex: 1, backgroundColor: '#E4E2DC' } : { flex: 1 }}>
           <View style={Platform.OS === 'web' ? { flex: 1, width: '100%', maxWidth: 560, alignSelf: 'center', backgroundColor: cores.fundo, overflow: 'hidden' } : { flex: 1 }}>
+            <Portao>
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: cores.fundo } }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="boas-vindas" options={{ animation: 'fade' }} />
@@ -48,7 +54,9 @@ export default function RootLayout() {
               <Stack.Screen name="treino/executar" options={{ gestureEnabled: false, animation: 'slide_from_bottom' }} />
               <Stack.Screen name="historico/[id]" />
               <Stack.Screen name="historico/exercicio/[id]" />
+              <Stack.Screen name="atualizacao" />
             </Stack>
+            </Portao>
           </View>
         </View>
       </ContaProvider>

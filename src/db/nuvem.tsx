@@ -39,6 +39,8 @@ type EstadoNuvem = {
   entrando: boolean;
   /** true depois da primeira conferência aparelho x nuvem desta conta (deu certo ou não). */
   sincronizado: boolean;
+  /** true quando já se sabe se há alguém logado (sessão lida do aparelho). */
+  pronto: boolean;
 };
 
 export type Conta = EstadoNuvem & {
@@ -173,7 +175,7 @@ function descreverErro(e: unknown): { status: 'offline' | 'erro'; mensagem: stri
 class MotorBackup {
   private estado: EstadoNuvem = {
     usuario: null, status: 'desligado', ultimoBackup: null, mensagem: null, conflito: null, entrando: false,
-    sincronizado: false,
+    sincronizado: false, pronto: false,
   };
   private ouvintes = new Set<() => void>();
   private uid: string | null = null;
@@ -199,16 +201,20 @@ class MotorBackup {
 
   iniciar() {
     lerMeta(this.db, 'backup_em').then((v) => this.mudar({ ultimoBackup: v })).catch(() => {});
-    if (!supabase) return () => {};
+    if (!supabase) {
+      this.mudar({ pronto: true });
+      return () => {};
+    }
 
     const { data } = supabase.auth.onAuthStateChange((evento, sessao) => {
       if (!sessao) {
         this.uid = null;
         this.verificado = false;
         this.limparTimer();
-        this.mudar({ usuario: null, status: 'desligado', conflito: null, sincronizado: false });
+        this.mudar({ usuario: null, status: 'desligado', conflito: null, sincronizado: false, pronto: true });
         return;
       }
+      if (!this.estado.pronto) this.mudar({ pronto: true });
       const trocou = sessao.user.id !== this.uid;
       if (trocou) this.verificado = false;
       this.uid = sessao.user.id;

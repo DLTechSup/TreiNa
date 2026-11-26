@@ -17,8 +17,8 @@ export default function LayoutAbas() {
   const insets = useSafeAreaInsets();
   const { pronto, perfil } = useDados();
   if (!pronto) return null;
-  // Primeira vez (sem nome): abre a tela de boas-vindas / cadastro
-  if (!perfil.nome) return <Redirect href="/boas-vindas" />;
+  // Primeira vez (sem nome): abre o cadastro
+  if (!perfil.nome) return <Redirect href="/cadastro" />;
   return (
     <Tabs
       screenOptions={{

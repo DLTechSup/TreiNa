@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { CartaoNuvem } from '@/components/CartaoNuvem';
+import { CartaoVideos } from '@/components/CartaoVideos';
 import { Icone } from '@/components/Icone';
 import { Botao, Chip, Titulo } from '@/components/ui';
 import { cores, fontes, raio } from '@/constants/tema';
@@ -66,6 +67,7 @@ export default function TelaPerfil() {
           </View>
 
           <CartaoNuvem />
+          <CartaoVideos sempre />
 
           <Text style={s.legenda}>Seus dados <Text style={s.cinza}>· só o nome é obrigatório, o resto ajuda a montar o treino</Text></Text>
 

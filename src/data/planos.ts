@@ -1,5 +1,5 @@
 import listaPlanos from './planos.json';
-import { porId } from './index';
+import { porId, trocarPorVideo } from './index';
 import type { DiaPlano, ItemPlano, Perfil } from '@/db/banco';
 
 export type ItemSugerido = { id: string; series: number; repeticoes: string; descanso: number };
@@ -15,7 +15,11 @@ export type PlanoSugerido = {
   dias: DiaSugerido[];
 };
 
-export const planos = listaPlanos as PlanoSugerido[];
+// Exercícios que têm vídeo próprio entram no lugar do GIF equivalente
+export const planos = (listaPlanos as PlanoSugerido[]).map((p) => ({
+  ...p,
+  dias: p.dias.map((d) => ({ ...d, itens: d.itens.map((i) => ({ ...i, id: trocarPorVideo(i.id) })) })),
+}));
 export const planoPorId = (id: string) => planos.find((p) => p.id === id);
 
 /** Converte um plano sugerido para a semana do app. */

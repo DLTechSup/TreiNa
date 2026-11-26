@@ -90,7 +90,7 @@ export default function Cadastro() {
   return (
     <SafeAreaView style={s.tela}>
       <View style={s.topo}>
-        <Pressable onPress={() => (passo ? setPasso(passo - 1) : router.canGoBack() ? router.back() : router.replace('/boas-vindas'))}
+        <Pressable onPress={() => (passo ? setPasso(passo - 1) : router.canGoBack() ? router.back() : router.replace('/'))}
           style={s.voltar} accessibilityLabel="Voltar" hitSlop={6}>
           <Icone nome="voltar" tamanho={22} />
         </Pressable>

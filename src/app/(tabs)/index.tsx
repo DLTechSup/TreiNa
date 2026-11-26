@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
+import { CartaoVideos } from '@/components/CartaoVideos';
 import { Icone } from '@/components/Icone';
 import { MarcaTreiNa, Numero, Secao } from '@/components/pecas';
 import { Botao, Miniatura, Titulo } from '@/components/ui';
@@ -69,6 +70,9 @@ export default function Inicio() {
           <Text style={s.data}>{SEMANA_LONGA[hoje.getDay()]}, {hoje.getDate()} de {MESES[hoje.getMonth()]}</Text>
           <Titulo style={{ fontSize: 28 }}>{saudacao(hoje)}{primeiroNome ? `, ${primeiroNome}` : '!'}</Titulo>
         </View>
+
+        {/* Atualização de vídeos (some quando todos estiverem no celular) */}
+        <CartaoVideos />
 
         {/* Treino de hoje */}
         <View style={s.cartaoEscuro}>
